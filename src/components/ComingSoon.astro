@@ -5,13 +5,24 @@
 </div>
 
 <script>
-import { lazy } from "astro:schema";
 
 	const i18n: Record<string, { title: string; subtitle: string }> = {
-		en: { title: 'Coming Soon',        subtitle: "Before you go, here's a fun fact:" },
-		it: { title: 'Prossimamente',       subtitle: "Prima di andare, ecco un fatto curioso:" },
-		de: { title: 'Demnächst',           subtitle: "Bevor du gehst, hier ist eine Tatsache:" },
-		fr: { title: 'Bientôt disponible',  subtitle: "Avant de partir, voici un fait amusant:" },
+		en: {
+            title: 'Under Construction 🚧',
+            subtitle: "I'm still building this site 😅. While you wait, enjoy a random fact 🤖:"
+        },
+        it: {
+            title: 'Sito in costruzione 🚧',
+            subtitle: "Ci sto ancora lavorando 😅. Nel frattempo, ecco una curiosità 🤖:"
+        },
+        de: {
+            title: 'Seite im Aufbau 🚧',
+            subtitle: "Ich arbeite noch an der Seite 😅. In der Zwischenzeit, ein zufälliger Fakt 🤖:"
+        },
+        fr: {
+            title: 'Site en construction 🚧',
+            subtitle: "Je travaille encore sur le site 😅. En attendant, voici un fait amusant 🤖 :"
+        },
 	};
 
 	// The facts API only supports 'en' and 'de'
@@ -65,12 +76,13 @@ import { lazy } from "astro:schema";
 	setTimeout(() => {
 		typewriter('typed-title', strings.title, 90, () => {
 			document.querySelector<HTMLElement>('.cursor')!.style.display = 'none';
+            const subTime = 500
 			setTimeout(() => {
 				typewriter('typed-sub', strings.subtitle, 40);
 				setTimeout(() => {
 					typewriter('typed-fact', initialFact, 40);
-				}, strings.subtitle.length * 50 + 400);
-			}, 400);
+				}, strings.subtitle.length * 40 + subTime);
+			}, subTime);
 		});
 	}, 600);
 
@@ -95,11 +107,12 @@ import { lazy } from "astro:schema";
 		font-size: 3rem;
 		font-weight: 700;
 		margin-bottom: 1rem;
+		color: var(--fg);
 	}
 
 	p {
 		font-size: 1.25rem;
-		color: #666;
+		color: var(--muted);
 	}
 
 	.cursor,

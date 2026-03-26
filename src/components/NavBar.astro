@@ -1,74 +1,119 @@
+---
+import { Icon } from 'astro-icon/components';
+---
 <nav>
 	<div class="nav-inner">
-		<div class="lang-selector">
-			<button class="lang-btn" id="lang-btn" aria-haspopup="listbox" aria-expanded="false">
-				<span id="lang-flag">🇬🇧</span>
-				<span id="lang-label">EN</span>
-				<span class="chevron">▾</span>
+		<div class="settings-wrap">
+
+			<!-- Gear trigger -->
+			<button class="settings-btn" id="settings-btn" aria-label="Settings" aria-expanded="false">
+				<Icon name="lucide:settings" size={24} />
 			</button>
-			<ul class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
-				<li role="option" data-lang="en"  data-flag="🇬🇧">🇬🇧 English</li>
-				<li role="option" data-lang="it"  data-flag="🇮🇹">🇮🇹 Italiano</li>
-				<li role="option" data-lang="de"  data-flag="🇩🇪">🇩🇪 Deutsch</li>
-				<li role="option" data-lang="fr"  data-flag="🇫🇷">🇫🇷 Français</li>
-			</ul>
+
+			<!-- Settings panel -->
+			<div class="settings-panel" id="settings-panel">
+				<!-- Language -->
+				<div class="panel-section">
+					<div class="section-label">Language</div>
+					<div class="lang-chips">
+						<button class="chip" data-lang="en">EN</button>
+						<button class="chip" data-lang="it">IT</button>
+						<button class="chip" data-lang="de">DE</button>
+						<button class="chip" data-lang="fr">FR</button>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<!-- Theme -->
+				<div class="panel-section">
+					<div class="section-label">
+						
+						<span id="theme-label">Light</span>
+					</div>
+					<button class="toggle" id="theme-toggle" aria-label="Toggle dark mode">
+						<span class="toggle-thumb"></span>
+					</button>
+				</div>
+
+			</div>
 		</div>
 	</div>
 </nav>
 
 <script>
-	const btn      = document.getElementById('lang-btn')!;
-	const dropdown = document.getElementById('lang-dropdown')!;
-	const flagEl   = document.getElementById('lang-flag')!;
-	const labelEl  = document.getElementById('lang-label')!;
+	// ── Elements ──────────────────────────────────────────────────────
+	const settingsBtn   = document.getElementById('settings-btn')!;
+	const settingsPanel = document.getElementById('settings-panel')!;
+	const themeToggle   = document.getElementById('theme-toggle')!;
+	const themeLabel    = document.getElementById('theme-label')!;
+	const themeIcon     = document.getElementById('theme-icon')!;
+	const chips         = document.querySelectorAll<HTMLButtonElement>('.chip');
 
-	const flags: Record<string, string> = { en: '🇬🇧', it: '🇮🇹', de: '🇩🇪', fr: '🇫🇷' };
-	const labels: Record<string, string> = { en: 'EN', it: 'IT', de: 'DE', fr: 'FR' };
-
-	// Restore saved language
-	const saved = localStorage.getItem('lang') ?? 'en';
-	applyLang(saved, false);
-
-	btn.addEventListener('click', () => {
-		const open = dropdown.classList.toggle('open');
-		btn.setAttribute('aria-expanded', String(open));
+	// ── Panel open / close ────────────────────────────────────────────
+	settingsBtn.addEventListener('click', () => {
+		const open = settingsPanel.classList.toggle('open');
+		settingsBtn.setAttribute('aria-expanded', String(open));
 	});
 
 	document.addEventListener('click', (e) => {
-		if (!btn.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
-			dropdown.classList.remove('open');
-			btn.setAttribute('aria-expanded', 'false');
+		if (!settingsBtn.contains(e.target as Node) && !settingsPanel.contains(e.target as Node)) {
+			settingsPanel.classList.remove('open');
+			settingsBtn.setAttribute('aria-expanded', 'false');
 		}
 	});
 
-	dropdown.querySelectorAll('li').forEach((li) => {
-		li.addEventListener('click', () => {
-			const lang = li.dataset.lang!;
-			applyLang(lang, true);
-			dropdown.classList.remove('open');
-			btn.setAttribute('aria-expanded', 'false');
-		});
-	});
-
+	// ── Language ──────────────────────────────────────────────────────
 	function applyLang(lang: string, dispatch: boolean) {
-		flagEl.textContent  = flags[lang] ?? '🇬🇧';
-		labelEl.textContent = labels[lang] ?? 'EN';
+		chips.forEach(c => c.classList.toggle('active', c.dataset.lang === lang));
 		localStorage.setItem('lang', lang);
 		document.documentElement.lang = lang;
-		if (dispatch) {
-			window.dispatchEvent(new CustomEvent('lang-change', { detail: { lang } }));
-		}
+		if (dispatch) window.dispatchEvent(new CustomEvent('lang-change', { detail: { lang } }));
 	}
+
+	chips.forEach(chip => {
+		chip.addEventListener('click', () => applyLang(chip.dataset.lang!, true));
+	});
+
+	applyLang(localStorage.getItem('lang') ?? 'en', false);
+
+	// ── Dark mode ─────────────────────────────────────────────────────
+	const moonPath = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+	const sunLines = `
+		<circle cx="12" cy="12" r="5"/>
+		<line x1="12" y1="1"  x2="12" y2="3"/>
+		<line x1="12" y1="21" x2="12" y2="23"/>
+		<line x1="4.22" y1="4.22"   x2="5.64" y2="5.64"/>
+		<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+		<line x1="1"  y1="12" x2="3"  y2="12"/>
+		<line x1="21" y1="12" x2="23" y2="12"/>
+		<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+		<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+	function applyTheme(dark: boolean) {
+		document.documentElement.classList.toggle('dark', dark);
+		themeToggle.classList.toggle('on', dark);
+		themeLabel.textContent = dark ? 'Dark' : 'Light';
+		themeIcon.innerHTML    = dark ? moonPath : sunLines;
+		localStorage.setItem('theme', dark ? 'dark' : 'light');
+	}
+
+	themeToggle.addEventListener('click', () => {
+		applyTheme(!document.documentElement.classList.contains('dark'));
+	});
+
+	// Restore saved theme (or system preference)
+	const savedTheme = localStorage.getItem('theme');
+	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+	applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
 </script>
 
 <style>
 	nav {
 		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
+		top: 0; left: 0; right: 0;
 		z-index: 100;
-		padding: 0.75rem 1.5rem;
+		padding: 0.75rem 1.25rem;
 		pointer-events: none;
 	}
 
@@ -77,66 +122,133 @@
 		justify-content: flex-end;
 	}
 
-	.lang-selector {
+	.settings-wrap {
 		position: relative;
 		pointer-events: all;
 	}
 
-	.lang-btn {
+	/* ── Gear button ── */
+	.settings-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: .5;
+		width: 36px;
+		height: 36px;
+		background: var(--surface);
+		cursor: pointer;
+		backdrop-filter: blur(8px);
+		color: var(--fg);
+		transition: background 0.15s, transform 0.3s;
+	}
+
+	.settings-btn:hover { opacity: 1; }
+
+	.settings-btn[aria-expanded="true"] {
+		transform: rotate(60deg);
+		opacity: 1;
+	}
+
+	/* ── Panel ── */
+	.settings-panel {
+		display: none;
+		position: absolute;
+		top: calc(100% + 8px);
+		right: 0;
+		width: 200px;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		box-shadow: 0 8px 24px var(--shadow);
+		padding: 0.5rem 0;
+		animation: pop-in 0.15s ease;
+	}
+
+	.settings-panel.open { display: block; }
+
+	@keyframes pop-in {
+		from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+		to   { opacity: 1; transform: translateY(0)    scale(1); }
+	}
+
+	/* ── Sections ── */
+	.panel-section {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.55rem 0.85rem;
+		gap: 0.5rem;
+	}
+
+	.section-label {
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
-		background: rgba(255,255,255,0.85);
-		border: 1px solid #ddd;
-		border-radius: 6px;
-		padding: 0.35rem 0.65rem;
-		font-size: 0.85rem;
+		font-size: 0.78rem;
+		color: var(--muted);
+		white-space: nowrap;
+	}
+
+	.divider {
+		height: 1px;
+		background: var(--border);
+		margin: 0.2rem 0;
+	}
+
+	/* ── Language chips ── */
+	.lang-chips {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.chip {
+		padding: 0.2rem 0.4rem;
+		border: 1px solid var(--border);
+		border-radius: 5px;
+		font-size: 0.72rem;
 		cursor: pointer;
-		backdrop-filter: blur(6px);
-		transition: background 0.15s;
+		background: transparent;
+		color: var(--fg);
+		transition: background 0.12s, border-color 0.12s;
 	}
 
-	.lang-btn:hover {
-		background: rgba(255,255,255,1);
+	.chip:hover  { background: var(--border); }
+	.chip.active {
+		background: var(--fg);
+		color: var(--bg);
+		border-color: var(--fg);
 	}
 
-	.chevron {
-		font-size: 0.7rem;
-		color: #888;
-		transition: transform 0.15s;
+	/* ── Theme toggle ── */
+	.toggle {
+		position: relative;
+		width: 36px;
+		height: 20px;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--border);
+		cursor: pointer;
+		transition: background 0.2s, border-color 0.2s;
+		flex-shrink: 0;
 	}
 
-	.lang-btn[aria-expanded="true"] .chevron {
-		transform: rotate(180deg);
+	.toggle.on {
+		background: var(--fg);
+		border-color: var(--fg);
 	}
 
-	.lang-dropdown {
-		display: none;
+	.toggle-thumb {
 		position: absolute;
-		top: calc(100% + 6px);
-		right: 0;
-		background: white;
-		border: 1px solid #ddd;
-		border-radius: 6px;
-		list-style: none;
-		margin: 0;
-		padding: 0.25rem 0;
-		min-width: 140px;
-		box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+		top: 2px;
+		left: 2px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--bg);
+		transition: transform 0.2s;
 	}
 
-	.lang-dropdown.open {
-		display: block;
-	}
-
-	.lang-dropdown li {
-		padding: 0.45rem 0.85rem;
-		cursor: pointer;
-		font-size: 0.85rem;
-		transition: background 0.1s;
-	}
-
-	.lang-dropdown li:hover {
-		background: #f5f5f5;
+	.toggle.on .toggle-thumb {
+		transform: translateX(16px);
 	}
 </style>
