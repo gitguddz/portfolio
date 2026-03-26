@@ -1,0 +1,142 @@
+<nav>
+	<div class="nav-inner">
+		<div class="lang-selector">
+			<button class="lang-btn" id="lang-btn" aria-haspopup="listbox" aria-expanded="false">
+				<span id="lang-flag">🇬🇧</span>
+				<span id="lang-label">EN</span>
+				<span class="chevron">▾</span>
+			</button>
+			<ul class="lang-dropdown" id="lang-dropdown" role="listbox" aria-label="Select language">
+				<li role="option" data-lang="en"  data-flag="🇬🇧">🇬🇧 English</li>
+				<li role="option" data-lang="it"  data-flag="🇮🇹">🇮🇹 Italiano</li>
+				<li role="option" data-lang="de"  data-flag="🇩🇪">🇩🇪 Deutsch</li>
+				<li role="option" data-lang="fr"  data-flag="🇫🇷">🇫🇷 Français</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+
+<script>
+	const btn      = document.getElementById('lang-btn')!;
+	const dropdown = document.getElementById('lang-dropdown')!;
+	const flagEl   = document.getElementById('lang-flag')!;
+	const labelEl  = document.getElementById('lang-label')!;
+
+	const flags: Record<string, string> = { en: '🇬🇧', it: '🇮🇹', de: '🇩🇪', fr: '🇫🇷' };
+	const labels: Record<string, string> = { en: 'EN', it: 'IT', de: 'DE', fr: 'FR' };
+
+	// Restore saved language
+	const saved = localStorage.getItem('lang') ?? 'en';
+	applyLang(saved, false);
+
+	btn.addEventListener('click', () => {
+		const open = dropdown.classList.toggle('open');
+		btn.setAttribute('aria-expanded', String(open));
+	});
+
+	document.addEventListener('click', (e) => {
+		if (!btn.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+			dropdown.classList.remove('open');
+			btn.setAttribute('aria-expanded', 'false');
+		}
+	});
+
+	dropdown.querySelectorAll('li').forEach((li) => {
+		li.addEventListener('click', () => {
+			const lang = li.dataset.lang!;
+			applyLang(lang, true);
+			dropdown.classList.remove('open');
+			btn.setAttribute('aria-expanded', 'false');
+		});
+	});
+
+	function applyLang(lang: string, dispatch: boolean) {
+		flagEl.textContent  = flags[lang] ?? '🇬🇧';
+		labelEl.textContent = labels[lang] ?? 'EN';
+		localStorage.setItem('lang', lang);
+		document.documentElement.lang = lang;
+		if (dispatch) {
+			window.dispatchEvent(new CustomEvent('lang-change', { detail: { lang } }));
+		}
+	}
+</script>
+
+<style>
+	nav {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 100;
+		padding: 0.75rem 1.5rem;
+		pointer-events: none;
+	}
+
+	.nav-inner {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.lang-selector {
+		position: relative;
+		pointer-events: all;
+	}
+
+	.lang-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		background: rgba(255,255,255,0.85);
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		padding: 0.35rem 0.65rem;
+		font-size: 0.85rem;
+		cursor: pointer;
+		backdrop-filter: blur(6px);
+		transition: background 0.15s;
+	}
+
+	.lang-btn:hover {
+		background: rgba(255,255,255,1);
+	}
+
+	.chevron {
+		font-size: 0.7rem;
+		color: #888;
+		transition: transform 0.15s;
+	}
+
+	.lang-btn[aria-expanded="true"] .chevron {
+		transform: rotate(180deg);
+	}
+
+	.lang-dropdown {
+		display: none;
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 0;
+		background: white;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		list-style: none;
+		margin: 0;
+		padding: 0.25rem 0;
+		min-width: 140px;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+	}
+
+	.lang-dropdown.open {
+		display: block;
+	}
+
+	.lang-dropdown li {
+		padding: 0.45rem 0.85rem;
+		cursor: pointer;
+		font-size: 0.85rem;
+		transition: background 0.1s;
+	}
+
+	.lang-dropdown li:hover {
+		background: #f5f5f5;
+	}
+</style>
