@@ -1,0 +1,103 @@
+<div class="coming-soon">
+		<h1><span id="typed-title"></span><span class="cursor">|</span></h1>
+		<p><span id="typed-sub"></span><span class="cursor-sub"></span></p>
+		<p><span id="typed-fact"></span><span class="cursor-sub"></span></p>
+</div>
+
+<script>
+	function typewriter(elementId: string, text: string, speed: number, onDone?: () => void) {
+		const el = document.getElementById(elementId)!;
+		let i = 0;
+
+		function typeChar() {
+			if (i < text.length) {
+				el.textContent += text[i];
+				i++;
+				// Random delay to mimic mechanical key variation
+				const jitter = Math.random() * 80 - 20;
+				setTimeout(typeChar, speed + jitter);
+			} else {
+				onDone?.();
+			}
+		}
+
+		typeChar();
+	}
+
+
+	// Fun Facts API
+	const response = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en', {
+    	method: 'GET',
+    	headers: {
+        'Content-Type': 'application/json'
+    	}
+	});
+
+	const data = await response.json();
+
+	// Small initial delay, then type title, then subtitle, then the fact
+	setTimeout(() => {
+		typewriter('typed-title', 'Coming Soon', 90, () => {
+			document.querySelector<HTMLElement>('.cursor')!.style.display = 'none';
+			setTimeout(() => {
+				setTimeout(() => {
+					typewriter('typed-sub', 'Before you go, here\'s a fun fact:', 40);
+				}, 500);
+				setTimeout(() => {
+					typewriter('typed-fact', data.text, 40);
+				}, 3000);
+			}, 400);
+
+
+		});
+	}, 600);
+</script>
+
+<style>
+	.coming-soon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding-top: 17vh;
+		height: 100vh;
+		text-align: center;
+	}
+
+	h1 {
+		font-size: 3rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+	}
+
+	p {
+		font-size: 1.25rem;
+		color: #666;
+	}
+
+	.cursor,
+	.cursor-sub {
+		display: inline-block;
+		animation: blink 0.6s step-end infinite;
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50%       { opacity: 0; }
+	}
+
+	.wait {
+		display: inline-block;
+		font-weight: 700;
+		font-size: 100em;
+		color: #333;
+		animation: jump 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	}
+
+	@keyframes jump {
+		0%   { transform: translateY(0)   scale(1); }
+		30%  { transform: translateY(-8px) scale(1.08); }
+		60%  { transform: translateY(2px)  scale(0.97); }
+		100% { transform: translateY(0)   scale(1); }
+	}
+</style>
