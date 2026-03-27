@@ -2,26 +2,31 @@
 		<h1><span id="typed-title"></span><span class="cursor">|</span></h1>
 		<p><span id="typed-sub"></span><span class="cursor-sub"></span></p>
 		<p><span id="typed-fact"></span><span class="cursor-sub"></span></p>
+	<button id="another-btn" class="another-btn" style="display:none">Another one</button>
 </div>
 
 <script>
 
-	const i18n: Record<string, { title: string; subtitle: string }> = {
+	const i18n: Record<string, { title: string; subtitle: string; another: string }> = {
 		en: {
             title: 'Under Construction 🚧',
-            subtitle: "I'm still building this site 😅. While you wait, enjoy a random fact 🤖:"
+            subtitle: "I'm still building this site 😅. While you wait, enjoy a random fact 🤖:",
+            another: 'Another one',
         },
         it: {
             title: 'Sito in costruzione 🚧',
-            subtitle: "Ci sto ancora lavorando 😅. Nel frattempo, ecco una curiosità 🤖:"
+            subtitle: "Ci sto ancora lavorando 😅. Nel frattempo, ecco una curiosità 🤖:",
+            another: 'Un\'altro fatto',
         },
         de: {
             title: 'Seite im Aufbau 🚧',
-            subtitle: "Ich arbeite noch an der Seite 😅. In der Zwischenzeit, ein zufälliger Fakt 🤖:"
+            subtitle: "Ich arbeite noch an der Seite 😅. In der Zwischenzeit, ein zufälliger Fakt 🤖:",
+            another: 'Noch eine',
         },
         fr: {
             title: 'Site en construction 🚧',
-            subtitle: "Je travaille encore sur le site 😅. En attendant, voici un fait amusant 🤖 :"
+            subtitle: "Je travaille encore sur le site 😅. En attendant, voici un fait amusant 🤖 :",
+            another: 'Une autre',
         },
 	};
 
@@ -49,14 +54,39 @@
 		return text;
 	}
 
+	// ── Cancellable timers ────────────────────────────────────────────
+	const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
+	function schedule(fn: () => void, delay: number) {
+		const id = setTimeout(() => { activeTimers.delete(id); fn(); }, delay);
+		activeTimers.add(id);
+	}
+
+	function cancelAll() {
+		activeTimers.forEach(clearTimeout);
+		activeTimers.clear();
+        titleEl.textContent = '';
+		subtitleEl.textContent = '';
+		factEl.textContent = '';
+		cursorEl.style.display = '';
+		anotherBtn.style.display = 'none';
+		anotherBtn.disabled = false;
+	}
+
+	// ── Cancellable typewriter ────────────────────────────────────────
+	const twGen: Record<string, number> = {};
+
 	function typewriter(elementId: string, text: string, speed: number, onDone?: () => void) {
-		const el = document.getElementById(elementId)!;
+		const gen = (twGen[elementId] = (twGen[elementId] ?? 0) + 1);
+		const el  = document.getElementById(elementId)!;
 		el.textContent = '';
 		let i = 0;
 		function typeChar() {
+			if (twGen[elementId] !== gen) return;
 			if (i < text.length) {
 				el.textContent += text[i++];
-				setTimeout(typeChar, speed);
+				const id = setTimeout(typeChar, speed);
+				activeTimers.add(id);
 			} else {
 				onDone?.();
 			}
@@ -68,27 +98,59 @@
 		return localStorage.getItem('lang') ?? 'en';
 	}
 
-	// ── Initial load ──────────────────────────────────────────────────
-	const initialLang = currentLang();
-	const initialFact = await fetchFact(initialLang);
-	const strings     = i18n[initialLang] ?? i18n.en;
+	const titleEl   = document.getElementById('typed-title')!;
+    const subtitleEl = document.getElementById('typed-sub')!;
+    const factEl    = document.getElementById('typed-fact')!;   
+	const cursorEl  = document.querySelector<HTMLElement>('.cursor')!;
+	const anotherBtn = document.getElementById('another-btn') as HTMLButtonElement;
 
-	setTimeout(() => {
-		typewriter('typed-title', strings.title, 90, () => {
-			document.querySelector<HTMLElement>('.cursor')!.style.display = 'none';
-            const subTime = 500
-			setTimeout(() => {
-				typewriter('typed-sub', strings.subtitle, 40);
-				setTimeout(() => {
-					typewriter('typed-fact', initialFact, 40);
-				}, strings.subtitle.length * 40 + subTime);
-			}, subTime);
+	function showAnotherBtn(label: string) {
+		anotherBtn.textContent = label;
+		anotherBtn.style.display = '';
+	}
+
+	// ── Full sequence ─────────────────────────────────────────────────
+	async function startSequence(lang: string) {
+		const t    = i18n[lang] ?? i18n.en;
+		const fact = await fetchFact(lang);
+
+		// Clear everything and reset cursor
+		cancelAll();
+		
+
+		const subTime = 500;
+
+		schedule(() => {
+			typewriter('typed-title', t.title, 90, () => {
+				cursorEl.style.display = 'none';
+				schedule(() => {
+					typewriter('typed-sub', t.subtitle, 40);
+					schedule(() => {
+						typewriter('typed-fact', fact, 40, () => {
+							showAnotherBtn(t.another);
+						});
+					}, t.subtitle.length * 40 + subTime);
+				}, subTime);
+			});
+		}, 600);
+	}
+
+	// ── Initial load ──────────────────────────────────────────────────
+	startSequence(currentLang());
+
+	// ── Another one ───────────────────────────────────────────────────
+	anotherBtn.addEventListener('click', async () => {
+		anotherBtn.disabled = true;
+		const fact = await fetchFact(currentLang());
+		typewriter('typed-fact', fact, 40, () => {
+			anotherBtn.disabled = false;
 		});
-	}, 600);
+	});
 
 	// ── Language switch ───────────────────────────────────────────────
-	window.addEventListener('lang-change', async (e) => {
-        window.location.reload();
+	window.addEventListener('lang-change', (e) => {
+		const lang = (e as CustomEvent<{ lang: string }>).detail.lang;
+		startSequence(lang);
 	});
 </script>
 
@@ -119,6 +181,28 @@
 		max-width: 60ch;
 		line-height: 1.6;
         margin-bottom: 1rem;
+	}
+
+	.another-btn {
+		margin-top: 0.5rem;
+		padding: 0.45rem 1.1rem;
+		font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+		color: var(--muted);
+		background: transparent;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.another-btn:hover:not(:disabled) {
+		color: var(--fg);
+		border-color: var(--fg);
+	}
+
+	.another-btn:disabled {
+		opacity: 0.4;
+		cursor: default;
 	}
 
 	.cursor,
