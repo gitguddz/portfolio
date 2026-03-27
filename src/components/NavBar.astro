@@ -28,7 +28,8 @@ import { Icon } from 'astro-icon/components';
 				<!-- Theme -->
 				<div class="panel-section">
 					<div class="section-label">
-						
+						<span class="theme-icon theme-icon--sun"><Icon name="lucide:sun" size={13} /></span>
+						<span class="theme-icon theme-icon--moon"><Icon name="lucide:moon" size={13} /></span>
 						<span id="theme-label">Light</span>
 					</div>
 					<button class="toggle" id="theme-toggle" aria-label="Toggle dark mode">
@@ -47,7 +48,6 @@ import { Icon } from 'astro-icon/components';
 	const settingsPanel = document.getElementById('settings-panel')!;
 	const themeToggle   = document.getElementById('theme-toggle')!;
 	const themeLabel    = document.getElementById('theme-label')!;
-	const themeIcon     = document.getElementById('theme-icon')!;
 	const chips         = document.querySelectorAll<HTMLButtonElement>('.chip');
 
 	// ── Panel open / close ────────────────────────────────────────────
@@ -78,23 +78,10 @@ import { Icon } from 'astro-icon/components';
 	applyLang(localStorage.getItem('lang') ?? 'en', false);
 
 	// ── Dark mode ─────────────────────────────────────────────────────
-	const moonPath = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
-	const sunLines = `
-		<circle cx="12" cy="12" r="5"/>
-		<line x1="12" y1="1"  x2="12" y2="3"/>
-		<line x1="12" y1="21" x2="12" y2="23"/>
-		<line x1="4.22" y1="4.22"   x2="5.64" y2="5.64"/>
-		<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-		<line x1="1"  y1="12" x2="3"  y2="12"/>
-		<line x1="21" y1="12" x2="23" y2="12"/>
-		<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-		<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
-
 	function applyTheme(dark: boolean) {
 		document.documentElement.classList.toggle('dark', dark);
 		themeToggle.classList.toggle('on', dark);
 		themeLabel.textContent = dark ? 'Dark' : 'Light';
-		themeIcon.innerHTML    = dark ? moonPath : sunLines;
 		localStorage.setItem('theme', dark ? 'dark' : 'light');
 	}
 
@@ -113,7 +100,7 @@ import { Icon } from 'astro-icon/components';
 		position: fixed;
 		top: 0; left: 0; right: 0;
 		z-index: 100;
-		padding: 0.75rem 1.25rem;
+		padding: 0.6rem 1rem;
 		pointer-events: none;
 	}
 
@@ -133,13 +120,15 @@ import { Icon } from 'astro-icon/components';
 		align-items: center;
 		justify-content: center;
 		opacity: .5;
-		width: 36px;
-		height: 36px;
+		/* Minimum 44×44 tap target on mobile */
+		min-width: 44px;
+		min-height: 44px;
 		background: var(--surface);
 		cursor: pointer;
 		backdrop-filter: blur(8px);
 		color: var(--fg);
-		transition: background 0.15s, transform 0.3s;
+		border-radius: 8px;
+		transition: background 0.15s, transform 0.3s, opacity 0.15s;
 	}
 
 	.settings-btn:hover { opacity: 1; }
@@ -155,7 +144,9 @@ import { Icon } from 'astro-icon/components';
 		position: absolute;
 		top: calc(100% + 8px);
 		right: 0;
-		width: 200px;
+		/* Full-width on small screens, fixed on larger */
+		width: calc(100vw - 2rem);
+		max-width: 220px;
 		background: var(--bg);
 		border: 1px solid var(--border);
 		border-radius: 10px;
@@ -176,15 +167,16 @@ import { Icon } from 'astro-icon/components';
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.55rem 0.85rem;
+		padding: 0.65rem 0.85rem;
 		gap: 0.5rem;
+		min-height: 44px;
 	}
 
 	.section-label {
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
-		font-size: 0.78rem;
+		font-size: 0.82rem;
 		color: var(--muted);
 		white-space: nowrap;
 	}
@@ -202,10 +194,10 @@ import { Icon } from 'astro-icon/components';
 	}
 
 	.chip {
-		padding: 0.2rem 0.4rem;
+		padding: 0.35rem 0.5rem;
 		border: 1px solid var(--border);
 		border-radius: 5px;
-		font-size: 0.72rem;
+		font-size: 0.65rem;
 		cursor: pointer;
 		background: transparent;
 		color: var(--fg);
@@ -218,6 +210,13 @@ import { Icon } from 'astro-icon/components';
 		color: var(--bg);
 		border-color: var(--fg);
 	}
+
+	/* ── Theme icon swap ── */
+	.theme-icon { display: flex; align-items: center; }
+	.theme-icon--moon { display: none; }
+
+	:global(html.dark) .theme-icon--sun  { display: none; }
+	:global(html.dark) .theme-icon--moon { display: flex; }
 
 	/* ── Theme toggle ── */
 	.toggle {
