@@ -1,9 +1,10 @@
 ---
 import ComingSoon from '../components/ComingSoon.astro';
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl, t } from '../i18n/utils';
 ---
 
-<Layout>
+<Layout title={t(getLangFromUrl(Astro.url), "site.title")} description="Welcome to my portfolio site! Here you'll find my projects, skills, and contact information." lang={getLangFromUrl(Astro.url)}>
 	<ComingSoon />
 </Layout>
 
