@@ -8,10 +8,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "npm run build && wrangler dev",
+    "astro": "astro",
+    "generate-types": "wrangler types",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.1.4",
     "@iconify-json/lucide": "^1.2.99",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.0.8",
@@ -21,6 +24,7 @@
     "three-stdlib": "^2.36.1"
   },
   "devDependencies": {
-    "@types/three": "^0.183.1"
+    "@types/three": "^0.183.1",
+    "wrangler": "^4.77.0"
   }
 }
