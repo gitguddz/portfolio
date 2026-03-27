@@ -47,11 +47,27 @@
 		const res  = await fetch(`https://uselessfacts.jsph.pl/api/v2/facts/random?language=${factApiLang(lang)}`);
 		const data = await res.json();
 		const text = data.text as string;
-		// API only has EN facts for it/fr — translate them natively
 		if (lang !== 'en' && lang !== 'de') {
 			return await translateFact(text, lang);
 		}
 		return text;
+	}
+
+	async function fetchCustomFact(lang: string): Promise<string> {
+		const res  = await fetch('/facts.json');
+		const data = await res.json();
+		const text = data[lang]?.[Math.floor(Math.random() * data[lang].length)] as string;
+
+		if (!text) {
+			// Fallback to English if no facts for the target language
+			return fetchFact('en');
+		}
+
+		return text;
+	}
+
+	function getNextFact(lang: string): Promise<string> {
+		return Math.random() < 0.8 ? fetchFact(lang) : fetchCustomFact(lang);
 	}
 
 	// ── Cancellable timers ────────────────────────────────────────────
@@ -112,7 +128,7 @@
 	// ── Full sequence ─────────────────────────────────────────────────
 	async function startSequence(lang: string) {
 		const t    = i18n[lang] ?? i18n.en;
-		const fact = await fetchFact(lang);
+		const fact = await getNextFact(lang);
 
 		// Clear everything and reset cursor
 		cancelAll();
@@ -141,7 +157,7 @@
 	// ── Another one ───────────────────────────────────────────────────
 	anotherBtn.addEventListener('click', async () => {
 		anotherBtn.disabled = true;
-		const fact = await fetchFact(currentLang());
+		const fact = await getNextFact(currentLang());
 		typewriter('typed-fact', fact, 40, () => {
 			anotherBtn.disabled = false;
 		});
