@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --fg: #111111;
+  --muted: #666666;
+  --border: #dddddd;
+  --surface: rgba(255, 255, 255, 0.88);
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
+html.dark {
+  --bg: #0f0f0f;
+  --fg: #f0f0f0;
+  --muted: #999999;
+  --border: #2e2e2e;
+  --surface: rgba(18, 18, 18, 0.88);
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}

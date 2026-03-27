@@ -1,0 +1,249 @@
+<div class="coming-soon">
+		<h1><span id="typed-title"></span><span class="cursor">|</span></h1>
+		<p><span id="typed-sub"></span><span class="cursor-sub"></span></p>
+		<p><span id="typed-fact"></span><span class="cursor-sub"></span></p>
+	<button id="another-btn" class="another-btn" style="display:none">Another one</button>
+</div>
+
+<script>
+
+	const i18n: Record<string, { title: string; subtitle: string; another: string }> = {
+		en: {
+            title: 'Under Construction 🚧',
+            subtitle: "I'm still building this site 😅. While you wait, enjoy a random fact 🤖:",
+            another: 'Another one',
+        },
+        it: {
+            title: 'Sito in costruzione 🚧',
+            subtitle: "Ci sto ancora lavorando 😅. Nel frattempo, ecco una curiosità 🤖:",
+            another: 'Un\'altro fatto',
+        },
+        de: {
+            title: 'Seite im Aufbau 🚧',
+            subtitle: "Ich arbeite noch an der Seite 😅. In der Zwischenzeit, ein zufälliger Fakt 🤖:",
+            another: 'Noch eine',
+        },
+        fr: {
+            title: 'Site en construction 🚧',
+            subtitle: "Je travaille encore sur le site 😅. En attendant, voici un fait amusant 🤖 :",
+            another: 'Une autre',
+        },
+	};
+
+	// The facts API only supports 'en' and 'de'
+	function factApiLang(lang: string) {
+		return lang === 'de' ? 'de' : 'en';
+	}
+
+	// Translate English fact to target language using Chrome's built-in Translator API.
+	// Falls back to the original text if the API is unavailable.
+	async function translateFact(text: string, targetLang: string): Promise<string> {
+		const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`);
+        const data = await res.json();
+        return data.responseData.translatedText;
+	}
+
+	async function fetchFact(lang: string): Promise<string> {
+		const res  = await fetch(`https://uselessfacts.jsph.pl/api/v2/facts/random?language=${factApiLang(lang)}`);
+		const data = await res.json();
+		const text = data.text as string;
+		if (lang !== 'en' && lang !== 'de') {
+			return await translateFact(text, lang);
+		}
+		return text;
+	}
+
+	async function fetchCustomFact(lang: string): Promise<string> {
+		const res  = await fetch('/facts.json');
+		const data = await res.json();
+		const text = data[lang]?.[Math.floor(Math.random() * data[lang].length)] as string;
+
+		if (!text) {
+			// Fallback to English if no facts for the target language
+			return fetchFact('en');
+		}
+
+		return text;
+	}
+
+	function getNextFact(lang: string): Promise<string> {
+		return Math.random() < 0.8 ? fetchFact(lang) : fetchCustomFact(lang);
+	}
+
+	// ── Cancellable timers ────────────────────────────────────────────
+	const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
+	function schedule(fn: () => void, delay: number) {
+		const id = setTimeout(() => { activeTimers.delete(id); fn(); }, delay);
+		activeTimers.add(id);
+	}
+
+	function cancelAll() {
+		activeTimers.forEach(clearTimeout);
+		activeTimers.clear();
+        titleEl.textContent = '';
+		subtitleEl.textContent = '';
+		factEl.textContent = '';
+		cursorEl.style.display = '';
+		anotherBtn.style.display = 'none';
+		anotherBtn.disabled = false;
+	}
+
+	// ── Cancellable typewriter ────────────────────────────────────────
+	const twGen: Record<string, number> = {};
+
+	function typewriter(elementId: string, text: string, speed: number, onDone?: () => void) {
+		const gen = (twGen[elementId] = (twGen[elementId] ?? 0) + 1);
+		const el  = document.getElementById(elementId)!;
+		el.textContent = '';
+		let i = 0;
+		function typeChar() {
+			if (twGen[elementId] !== gen) return;
+			if (i < text.length) {
+				el.textContent += text[i++];
+				const id = setTimeout(typeChar, speed);
+				activeTimers.add(id);
+			} else {
+				onDone?.();
+			}
+		}
+		typeChar();
+	}
+
+	function currentLang() {
+		return localStorage.getItem('lang') ?? 'en';
+	}
+
+	const titleEl   = document.getElementById('typed-title')!;
+    const subtitleEl = document.getElementById('typed-sub')!;
+    const factEl    = document.getElementById('typed-fact')!;   
+	const cursorEl  = document.querySelector<HTMLElement>('.cursor')!;
+	const anotherBtn = document.getElementById('another-btn') as HTMLButtonElement;
+
+	function showAnotherBtn(label: string) {
+		anotherBtn.textContent = label;
+		anotherBtn.style.display = '';
+	}
+
+	// ── Full sequence ─────────────────────────────────────────────────
+	async function startSequence(lang: string) {
+		const t    = i18n[lang] ?? i18n.en;
+		const fact = await getNextFact(lang);
+
+		// Clear everything and reset cursor
+		cancelAll();
+		
+
+		const subTime = 500;
+
+		schedule(() => {
+			typewriter('typed-title', t.title, 90, () => {
+				cursorEl.style.display = 'none';
+				schedule(() => {
+					typewriter('typed-sub', t.subtitle, 40);
+					schedule(() => {
+						typewriter('typed-fact', fact, 40, () => {
+							showAnotherBtn(t.another);
+						});
+					}, t.subtitle.length * 40 + subTime);
+				}, subTime);
+			});
+		}, 600);
+	}
+
+	// ── Initial load ──────────────────────────────────────────────────
+	startSequence(currentLang());
+
+	// ── Another one ───────────────────────────────────────────────────
+	anotherBtn.addEventListener('click', async () => {
+		anotherBtn.disabled = true;
+		const fact = await getNextFact(currentLang());
+		typewriter('typed-fact', fact, 40, () => {
+			anotherBtn.disabled = false;
+		});
+	});
+
+	// ── Language switch ───────────────────────────────────────────────
+	window.addEventListener('lang-change', (e) => {
+		const lang = (e as CustomEvent<{ lang: string }>).detail.lang;
+		startSequence(lang);
+	});
+</script>
+
+<style>
+	.coming-soon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 22vh 1.25rem 2rem;
+		min-height: 100vh;
+		text-align: center;
+		box-sizing: border-box;
+	}
+
+	h1 {
+		font-size: clamp(1.75rem, 6vw, 3rem);
+		font-weight: 700;
+		margin-bottom: 1rem;
+		color: var(--fg);
+		line-height: 1.2;
+		word-break: break-word;
+	}
+
+	p {
+		font-size: clamp(0.75rem, 3vw, 1.25rem);
+		color: var(--muted);
+		max-width: 60ch;
+		line-height: 1.6;
+        margin-bottom: 1rem;
+	}
+
+	.another-btn {
+		margin-top: 0.5rem;
+		padding: 0.45rem 1.1rem;
+		font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+		color: var(--muted);
+		background: transparent;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.another-btn:hover:not(:disabled) {
+		color: var(--fg);
+		border-color: var(--fg);
+	}
+
+	.another-btn:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+
+	.cursor,
+	.cursor-sub {
+		display: inline-block;
+		animation: blink 0.6s step-end infinite;
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50%       { opacity: 0; }
+	}
+
+	.wait {
+		display: inline-block;
+		font-weight: 700;
+		font-size: 100em;
+		color: #333;
+		animation: jump 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	}
+
+	@keyframes jump {
+		0%   { transform: translateY(0)   scale(1); }
+		30%  { transform: translateY(-8px) scale(1.08); }
+		60%  { transform: translateY(2px)  scale(0.97); }
+		100% { transform: translateY(0)   scale(1); }
+	}
+</style>

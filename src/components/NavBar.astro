@@ -1,0 +1,253 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+<nav>
+	<div class="nav-inner">
+		<div class="settings-wrap">
+
+			<!-- Gear trigger -->
+			<button class="settings-btn" id="settings-btn" aria-label="Settings" aria-expanded="false">
+				<Icon name="lucide:settings" size={24} />
+			</button>
+
+			<!-- Settings panel -->
+			<div class="settings-panel" id="settings-panel">
+				<!-- Language -->
+				<div class="panel-section">
+					<div class="section-label">Language</div>
+					<div class="lang-chips">
+						<button class="chip" data-lang="en">EN</button>
+						<button class="chip" data-lang="it">IT</button>
+						<button class="chip" data-lang="de">DE</button>
+						<button class="chip" data-lang="fr">FR</button>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<!-- Theme -->
+				<div class="panel-section">
+					<div class="section-label">
+						<span class="theme-icon theme-icon--sun"><Icon name="lucide:sun" size={13} /></span>
+						<span class="theme-icon theme-icon--moon"><Icon name="lucide:moon" size={13} /></span>
+						<span id="theme-label">Light</span>
+					</div>
+					<button class="toggle" id="theme-toggle" aria-label="Toggle dark mode">
+						<span class="toggle-thumb"></span>
+					</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</nav>
+
+<script>
+	// ── Elements ──────────────────────────────────────────────────────
+	const settingsBtn   = document.getElementById('settings-btn')!;
+	const settingsPanel = document.getElementById('settings-panel')!;
+	const themeToggle   = document.getElementById('theme-toggle')!;
+	const themeLabel    = document.getElementById('theme-label')!;
+	const chips         = document.querySelectorAll<HTMLButtonElement>('.chip');
+
+	// ── Panel open / close ────────────────────────────────────────────
+	settingsBtn.addEventListener('click', () => {
+		const open = settingsPanel.classList.toggle('open');
+		settingsBtn.setAttribute('aria-expanded', String(open));
+	});
+
+	document.addEventListener('click', (e) => {
+		if (!settingsBtn.contains(e.target as Node) && !settingsPanel.contains(e.target as Node)) {
+			settingsPanel.classList.remove('open');
+			settingsBtn.setAttribute('aria-expanded', 'false');
+		}
+	});
+
+	// ── Language ──────────────────────────────────────────────────────
+	function applyLang(lang: string, dispatch: boolean) {
+		chips.forEach(c => c.classList.toggle('active', c.dataset.lang === lang));
+		localStorage.setItem('lang', lang);
+		document.documentElement.lang = lang;
+		if (dispatch) window.dispatchEvent(new CustomEvent('lang-change', { detail: { lang } }));
+	}
+
+	chips.forEach(chip => {
+		chip.addEventListener('click', () => applyLang(chip.dataset.lang!, true));
+	});
+
+	applyLang(localStorage.getItem('lang') ?? 'en', false);
+
+	// ── Dark mode ─────────────────────────────────────────────────────
+	function applyTheme(dark: boolean) {
+		document.documentElement.classList.toggle('dark', dark);
+		themeToggle.classList.toggle('on', dark);
+		themeLabel.textContent = dark ? 'Dark' : 'Light';
+		localStorage.setItem('theme', dark ? 'dark' : 'light');
+	}
+
+	themeToggle.addEventListener('click', () => {
+		applyTheme(!document.documentElement.classList.contains('dark'));
+	});
+
+	// Restore saved theme (or system preference)
+	const savedTheme = localStorage.getItem('theme');
+	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+	applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+</script>
+
+<style>
+	nav {
+		position: fixed;
+		top: 0; left: 0; right: 0;
+		z-index: 100;
+		padding: 0.6rem 1rem;
+		pointer-events: none;
+	}
+
+	.nav-inner {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.settings-wrap {
+		position: relative;
+		pointer-events: all;
+	}
+
+	/* ── Gear button ── */
+	.settings-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: .5;
+		/* Minimum 44×44 tap target on mobile */
+		min-width: 44px;
+		min-height: 44px;
+		background: var(--surface);
+		cursor: pointer;
+		backdrop-filter: blur(8px);
+		color: var(--fg);
+		border-radius: 8px;
+		transition: background 0.15s, transform 0.3s, opacity 0.15s;
+	}
+
+	.settings-btn:hover { opacity: 1; }
+
+	.settings-btn[aria-expanded="true"] {
+		transform: rotate(60deg);
+		opacity: 1;
+	}
+
+	/* ── Panel ── */
+	.settings-panel {
+		display: none;
+		position: absolute;
+		top: calc(100% + 8px);
+		right: 0;
+		/* Full-width on small screens, fixed on larger */
+		width: calc(100vw - 2rem);
+		max-width: 220px;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		box-shadow: 0 8px 24px var(--shadow);
+		padding: 0.5rem 0;
+		animation: pop-in 0.15s ease;
+	}
+
+	.settings-panel.open { display: block; }
+
+	@keyframes pop-in {
+		from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+		to   { opacity: 1; transform: translateY(0)    scale(1); }
+	}
+
+	/* ── Sections ── */
+	.panel-section {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.65rem 0.85rem;
+		gap: 0.5rem;
+		min-height: 44px;
+	}
+
+	.section-label {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.82rem;
+		color: var(--muted);
+		white-space: nowrap;
+	}
+
+	.divider {
+		height: 1px;
+		background: var(--border);
+		margin: 0.2rem 0;
+	}
+
+	/* ── Language chips ── */
+	.lang-chips {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.chip {
+		padding: 0.35rem 0.5rem;
+		border: 1px solid var(--border);
+		border-radius: 5px;
+		font-size: 0.65rem;
+		cursor: pointer;
+		background: transparent;
+		color: var(--fg);
+		transition: background 0.12s, border-color 0.12s;
+	}
+
+	.chip:hover  { background: var(--border); }
+	.chip.active {
+		background: var(--fg);
+		color: var(--bg);
+		border-color: var(--fg);
+	}
+
+	/* ── Theme icon swap ── */
+	.theme-icon { display: flex; align-items: center; }
+	.theme-icon--moon { display: none; }
+
+	:global(html.dark) .theme-icon--sun  { display: none; }
+	:global(html.dark) .theme-icon--moon { display: flex; }
+
+	/* ── Theme toggle ── */
+	.toggle {
+		position: relative;
+		width: 36px;
+		height: 20px;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--border);
+		cursor: pointer;
+		transition: background 0.2s, border-color 0.2s;
+		flex-shrink: 0;
+	}
+
+	.toggle.on {
+		background: var(--fg);
+		border-color: var(--fg);
+	}
+
+	.toggle-thumb {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--bg);
+		transition: transform 0.2s;
+	}
+
+	.toggle.on .toggle-thumb {
+		transform: translateX(16px);
+	}
+</style>
