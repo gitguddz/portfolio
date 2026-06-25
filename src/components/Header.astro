@@ -3,20 +3,15 @@ import { Icon } from "astro-icon/components";
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-transparent transition duration-200 ease-in-out"
+  class="sticky top-0 z-40 border-b border-transparent transition duration-200 ease-in-out w-full px-6 relative flex justify-between items-center"
 >
-  <div
-    class="mx-auto w-full max-w-5xl px-6 md:max-w-7xl relative z-10 flex justify-center items-center"
-  >
-    <div class="flex shrink-0 items-center mr-auto">
+    <div class="flex shrink-0 items-center min-w-0">
       <a href="/" class="flex items-center gap-2">
-        <!-- Inserire immagine logo-->
-        <Icon name="lucide:code" size={20} />
         <span class="font-bold">Sabri Akbas</span>
       </a>
     </div>
-    <nav class="flex items-center gap-6">
-      <ul class="flex h-full items-center gap-6 ml-auto">
+    <nav class="hidden md:flex items-center">
+      <ul class="flex h-full items-center gap-6">
         <li>
           <a href="#home" class="nav-link">Home</a>
         </li>
@@ -31,7 +26,16 @@ import { Icon } from "astro-icon/components";
         </li>
       </ul>
     </nav>
-    <div class="ml-auto">
+    <div class="flex justify-end items-center min-w-0">
+      <!-- Hamburger (mobile only) -->
+      <button
+        class="hamburger-btn md:hidden"
+        id="hamburger-btn"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+      >
+        <Icon name="lucide:menu" size={24} />
+      </button>
       <!-- Gear trigger -->
       <button
         class="settings-btn"
@@ -75,15 +79,59 @@ import { Icon } from "astro-icon/components";
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Mobile nav dropdown -->
+    <nav class="mobile-nav md:hidden" id="mobile-nav">
+      <ul class="mobile-nav-list">
+        <li><a href="#home" class="mobile-nav-link">Home</a></li>
+        <li><a href="#about" class="mobile-nav-link">About</a></li>
+        <li><a href="#projects" class="mobile-nav-link">Projects</a></li>
+        <li><a href="#contact" class="mobile-nav-link">Contact</a></li>
+      </ul>
+    </nav>
 </header>
 <script>
   // ── Elements ──────────────────────────────────────────────────────
+  const hamburgerBtn = document.getElementById("hamburger-btn")!;
+  const mobileNav = document.getElementById("mobile-nav")!;
   const settingsBtn = document.getElementById("settings-btn")!;
   const settingsPanel = document.getElementById("settings-panel")!;
   const themeToggle = document.getElementById("theme-toggle")!;
   const themeLabel = document.getElementById("theme-label")!;
   const chips = document.querySelectorAll<HTMLButtonElement>(".chip");
+
+  // ── Mobile menu ────────────────────────────────────────────────────
+  let mobileNavClosing = false;
+
+  function openMobileNav() {
+    mobileNav.classList.add("open");
+    hamburgerBtn.setAttribute("aria-expanded", "true");
+  }
+
+  function closeMobileNav() {
+    if (mobileNavClosing) return;
+    mobileNavClosing = true;
+    mobileNav.classList.add("closing");
+
+    const totalDelay = 220 + 300 + 80;
+    setTimeout(() => {
+      mobileNav.classList.remove("open", "closing");
+      hamburgerBtn.setAttribute("aria-expanded", "false");
+      mobileNavClosing = false;
+    }, totalDelay);
+  }
+
+  hamburgerBtn.addEventListener("click", () => {
+    if (mobileNav.classList.contains("open")) {
+      closeMobileNav();
+    } else {
+      openMobileNav();
+    }
+  });
+
+  mobileNav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => closeMobileNav());
+  });
 
   // ── Panel open / close ────────────────────────────────────────────
   settingsBtn.addEventListener("click", () => {
@@ -98,6 +146,13 @@ import { Icon } from "astro-icon/components";
     ) {
       settingsPanel.classList.remove("open");
       settingsBtn.setAttribute("aria-expanded", "false");
+    }
+    if (
+      !hamburgerBtn.contains(e.target as Node) &&
+      !mobileNav.contains(e.target as Node) &&
+      mobileNav.classList.contains("open")
+    ) {
+      closeMobileNav();
     }
   });
 
@@ -137,14 +192,112 @@ import { Icon } from "astro-icon/components";
 </script>
 
 <style>
-  .nav-inner {
+  /* ── Hamburger button (mobile) ── */
+  .hamburger-btn {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+    color: var(--fg);
+    background: none;
+    border: none;
+    transition: opacity 0.15s;
   }
 
-  .settings-wrap {
-    position: relative;
-    pointer-events: all;
+  .hamburger-btn:hover {
+    opacity: 1;
+  }
+
+  .hamburger-btn[aria-expanded="true"] {
+    opacity: 1;
+  }
+
+  /* ── Mobile nav ── */
+  .mobile-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 8px 24px var(--shadow);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .mobile-nav.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-nav.closing {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.24s,
+      opacity 0.3s ease 0.24s;
+  }
+
+  .mobile-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .mobile-nav.open .mobile-nav-list {
+    padding: 0.5rem 0;
+  }
+
+  .mobile-nav-link {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      background 0.12s;
+  }
+
+  /* Opening: staggered top to bottom */
+  .mobile-nav.open .mobile-nav-link {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .mobile-nav.open li:nth-child(1) .mobile-nav-link { transition-delay: 0.04s; }
+  .mobile-nav.open li:nth-child(2) .mobile-nav-link { transition-delay: 0.1s; }
+  .mobile-nav.open li:nth-child(3) .mobile-nav-link { transition-delay: 0.16s; }
+  .mobile-nav.open li:nth-child(4) .mobile-nav-link { transition-delay: 0.22s; }
+
+  /* Closing: staggered bottom to top (mirror of opening) */
+  .mobile-nav.closing .mobile-nav-link {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  .mobile-nav.closing li:nth-child(4) .mobile-nav-link { transition-delay: 0.04s; }
+  .mobile-nav.closing li:nth-child(3) .mobile-nav-link { transition-delay: 0.1s; }
+  .mobile-nav.closing li:nth-child(2) .mobile-nav-link { transition-delay: 0.16s; }
+  .mobile-nav.closing li:nth-child(1) .mobile-nav-link { transition-delay: 0.22s; }
+
+  .mobile-nav-link:hover {
+    background: var(--border);
   }
 
   /* ── Gear button ── */
