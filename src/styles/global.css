@@ -11,7 +11,7 @@
 }
 
 html.dark {
-  --bg: #0f0f0f;
+  --bg: #050508;
   --fg: #f0f0f0;
   --muted: #999999;
   --border: #2e2e2e;
@@ -47,8 +47,9 @@ body {
 
 html.dark body {
   background:
-    radial-gradient(ellipse at 20% 20%, rgba(40, 40, 70, 0.5) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(30, 50, 70, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 15% 15%, rgba(20, 25, 60, 0.25) 0%, transparent 45%),
+    radial-gradient(ellipse at 80% 25%, rgba(40, 15, 55, 0.12) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 80%, rgba(10, 30, 60, 0.2) 0%, transparent 45%),
     var(--bg);
 }
 
