@@ -12,7 +12,7 @@ export default defineConfig({
   },
 
   integrations: [icon()],
-  adapter: cloudflare(),
+  adapter: process.argv.includes("dev") ? undefined : cloudflare(),
 
   i18n: {
     defaultLocale: "en",

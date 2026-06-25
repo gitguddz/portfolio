@@ -1,11 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import translations from "../i18n/translations";
 ---
-
-<script is:inline define:vars={{ translations }}>
-  window.__navTranslations = translations;
-</script>
 
 <header
   class="sticky top-0 z-40 border-b border-transparent transition duration-200 ease-in-out w-full px-6 pt-4 pb-2 relative flex justify-between items-center"
@@ -94,7 +89,7 @@ import translations from "../i18n/translations";
 </header>
 <script>
   // ── Nav i18n ──────────────────────────────────────────────────────
-  const navTr = (window as any).__navTranslations as Record<string, Record<string, string>>;
+  const navTr = (window as any).__translations as Record<string, Record<string, string>>;
 
   function applyNavLang() {
     const lang = document.documentElement.lang || "en";
