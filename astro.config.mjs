@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 import cloudflare from "@astrojs/cloudflare";
 
-const isProd = process.env.NODE_ENV === "PROD";
+const isProd = process.env.NODE_ENV === "production";
 
 // https://astro.build/config
 export default defineConfig({
