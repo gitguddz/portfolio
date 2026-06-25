@@ -320,7 +320,13 @@ import translations from "../i18n/translations";
     z-index: 1;
     width: 100%;
     max-width: 1000px;
-    height: 320px;
+    height: 480px;
+  }
+
+  @media (min-width: 768px) {
+    .about-cards {
+      height: 320px;
+    }
   }
 
   .about-card {
@@ -329,7 +335,7 @@ import translations from "../i18n/translations";
     right: 1rem;
     top: 0;
     bottom: 0;
-    padding: 2.5rem;
+    padding: 1.25rem;
     border: 1.5px solid rgba(0, 0, 0, 0.15);
     border-radius: 16px;
     background: var(--surface);
@@ -339,6 +345,12 @@ import translations from "../i18n/translations";
     will-change: transform, opacity;
     overflow: hidden;
     box-sizing: border-box;
+  }
+
+  @media (min-width: 768px) {
+    .about-card {
+      padding: 2.5rem;
+    }
   }
 
   :global(html.dark) .about-card {
@@ -374,9 +386,9 @@ import translations from "../i18n/translations";
 
   .about-card--split {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
     height: 100%;
   }
 
@@ -389,6 +401,14 @@ import translations from "../i18n/translations";
     min-width: 0;
     min-height: 0;
     overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .about-card--split {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+      gap: 1.5rem;
+    }
   }
 
   .card-photo {
