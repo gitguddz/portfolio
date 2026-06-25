@@ -22,13 +22,29 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
 	</head>
-	<body>
+	<body class="intro">
 		<NavBar />
 		<main>
 			<slot/>
 		</main>
 	</body>
 </html>
+
+<script>
+	const body = document.body;
+
+	setTimeout(() => {
+		body.classList.add("intro-step-1");
+	}, 300);
+
+	setTimeout(() => {
+		body.classList.add("intro-step-2");
+	}, 1200);
+
+	setTimeout(() => {
+		body.classList.remove("intro", "intro-step-1", "intro-step-2");
+	}, 2200);
+</script>
 
 <style>
 	html,

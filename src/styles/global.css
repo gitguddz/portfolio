@@ -37,3 +37,35 @@ html.dark body {
     radial-gradient(ellipse at 80% 80%, rgba(30, 50, 70, 0.4) 0%, transparent 50%),
     var(--bg);
 }
+
+/* ── Intro animation ── */
+body.intro header {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+body.intro .hero-shapes {
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+body.intro .hero-content {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.intro-step-1 .hero-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.intro-step-2 header {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.intro-step-2 .hero-shapes {
+  opacity: 1;
+}

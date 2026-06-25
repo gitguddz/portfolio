@@ -19,6 +19,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^7.0.2",
     "astro-icon": "^1.1.5",
+    "motion": "^12.42.0",
     "tailwindcss": "^4.2.2",
     "three": "^0.183.2",
     "three-stdlib": "^2.36.1"
