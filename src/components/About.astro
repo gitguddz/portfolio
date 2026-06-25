@@ -8,7 +8,7 @@ import translations from "../i18n/translations";
 
 <section id="about" class="about">
   <div class="about-sticky">
-    <!-- <canvas id="about-canvas"></canvas> -->
+    <canvas id="about-particles"></canvas>
     <div class="about-cards">
       <div class="about-card about-card--split" data-card="0">
         <div class="card-left">
@@ -163,6 +163,131 @@ import translations from "../i18n/translations";
 
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
+
+  // ── Particles ─────────────────────────────────────────────────────
+  const canvas = document.getElementById("about-particles") as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d")!;
+  const sticky = canvas.parentElement!;
+
+  interface Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    r: number;
+    alpha: number;
+  }
+
+  const particles: Particle[] = [];
+  const COUNT = 60;
+  const mouse = { x: -1000, y: -1000 };
+  const mouseRadius = 150;
+
+  function resizeCanvas() {
+    canvas.width = sticky.clientWidth;
+    canvas.height = sticky.clientHeight;
+  }
+
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  sticky.addEventListener("mousemove", (e) => {
+    const rect = sticky.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+
+  sticky.addEventListener("mouseleave", () => {
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+
+  for (let i = 0; i < COUNT; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: 1 + Math.random() * 2,
+      alpha: 0.1 + Math.random() * 0.3,
+    });
+  }
+
+  function getColor() {
+    return document.documentElement.classList.contains("dark")
+      ? "255, 255, 255"
+      : "0, 0, 0";
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const color = getColor();
+    const maxDist = 120;
+
+    for (const p of particles) {
+      const dx = p.x - mouse.x;
+      const dy = p.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < mouseRadius && dist > 0) {
+        const force = (1 - dist / mouseRadius) * 0.8;
+        p.vx += (dx / dist) * force;
+        p.vy += (dy / dist) * force;
+      }
+
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${color}, ${p.alpha})`;
+      ctx.fill();
+    }
+
+    // Draw lines to cursor
+    for (const p of particles) {
+      const dx = p.x - mouse.x;
+      const dy = p.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < mouseRadius) {
+        const lineAlpha = (1 - dist / mouseRadius) * 0.2;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(${color}, ${lineAlpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < maxDist) {
+          const lineAlpha = (1 - dist / maxDist) * 0.15;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(${color}, ${lineAlpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(drawParticles);
+  }
+
+  drawParticles();
 </script>
 
 <style>
@@ -181,7 +306,7 @@ import translations from "../i18n/translations";
     overflow: hidden;
   }
 
-  #about-canvas {
+  #about-particles {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -205,7 +330,7 @@ import translations from "../i18n/translations";
     top: 0;
     bottom: 0;
     padding: 2.5rem;
-    border: 1px solid var(--border);
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
     border-radius: 16px;
     background: var(--surface);
     backdrop-filter: blur(12px);
@@ -214,6 +339,10 @@ import translations from "../i18n/translations";
     will-change: transform, opacity;
     overflow: hidden;
     box-sizing: border-box;
+  }
+
+  :global(html.dark) .about-card {
+    border-color: rgba(255, 255, 255, 0.12);
   }
 
   .card-number {

@@ -5,7 +5,7 @@
   --fg: #111111;
   --muted: #666666;
   --border: #dddddd;
-  --surface: rgba(255, 255, 255, 0.88);
+  --surface: linear-gradient(135deg, rgba(245, 245, 250, 0.6), rgba(235, 240, 250, 0.4));
   --shadow: rgba(0, 0, 0, 0.08);
     --roller-gradient: linear-gradient(135deg, #1d4ed8, #3b82f6, #06b6d4);
 }
@@ -15,7 +15,7 @@ html.dark {
   --fg: #f0f0f0;
   --muted: #999999;
   --border: #2e2e2e;
-  --surface: rgba(18, 18, 18, 0.88);
+  --surface: linear-gradient(135deg, rgba(30, 30, 45, 0.5), rgba(20, 25, 40, 0.35));
   --shadow: rgba(0, 0, 0, 0.4);
   --roller-gradient: linear-gradient(135deg, #60a5fa, #38bdf8, #22d3ee);
 }
