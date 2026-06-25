@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 import cloudflare from "@astrojs/cloudflare";
 
-const isProd = process.env.NODE_ENV === "production";
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,7 +12,7 @@ export default defineConfig({
   },
 
   integrations: [icon()],
-  adapter: isProd ? cloudflare() : undefined,
+  adapter: cloudflare(),
 
   i18n: {
     defaultLocale: "en",
