@@ -178,6 +178,7 @@ import translations from "../i18n/translations";
     localStorage.setItem("lang", lang);
     document.documentElement.lang = lang;
     if (reload) {
+      sessionStorage.setItem("skip-intro", "1");
       window.location.reload();
     }
   }

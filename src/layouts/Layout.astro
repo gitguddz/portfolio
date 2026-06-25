@@ -146,18 +146,24 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 	});
 
 	const body = document.body;
+	const skipIntro = sessionStorage.getItem("skip-intro");
 
-	setTimeout(() => {
-		body.classList.add("intro-step-1");
-	}, 300);
+	if (skipIntro) {
+		sessionStorage.removeItem("skip-intro");
+		body.classList.remove("intro");
+	} else {
+		setTimeout(() => {
+			body.classList.add("intro-step-1");
+		}, 300);
 
-	setTimeout(() => {
-		body.classList.add("intro-step-2");
-	}, 1200);
+		setTimeout(() => {
+			body.classList.add("intro-step-2");
+		}, 1200);
 
-	setTimeout(() => {
-		body.classList.remove("intro", "intro-step-1", "intro-step-2");
-	}, 2200);
+		setTimeout(() => {
+			body.classList.remove("intro", "intro-step-1", "intro-step-2");
+		}, 2200);
+	}
 </script>
 
 <style>
