@@ -110,6 +110,29 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 	}
 	requestAnimationFrame(raf);
 
+	// ── Nav hide/show on scroll ──────────────────────────────────────
+	const header = document.querySelector("header")!;
+	let lastScroll = 0;
+	let navHidden = false;
+
+	const isMobile = window.matchMedia("(max-width: 767px)");
+
+	window.addEventListener("scroll", () => {
+		const y = window.scrollY;
+		if (y < 100) {
+			header.classList.remove("nav-hidden");
+			navHidden = false;
+		} else if (y > lastScroll && !navHidden) {
+			header.classList.add("nav-hidden");
+			navHidden = true;
+		} else if (y < lastScroll && navHidden && isMobile.matches) {
+			header.classList.remove("nav-hidden");
+			navHidden = false;
+		}
+		lastScroll = y;
+	}, { passive: true });
+
+
 	document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
 		anchor.addEventListener("click", (e) => {
 			const id = anchor.getAttribute("href");

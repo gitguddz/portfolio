@@ -103,6 +103,32 @@ html.dark .roller-track > span {
   background-clip: text !important;
 }
 
+/* ── Nav hide/show ── */
+header {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+}
+
+header.nav-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+@media (min-width: 768px) {
+  header.nav-hidden::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 30px;
+  }
+
+  header.nav-hidden:hover {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* ── Intro animation ── */
 body.intro header {
   opacity: 0;
