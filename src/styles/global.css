@@ -7,6 +7,7 @@
   --border: #dddddd;
   --surface: rgba(255, 255, 255, 0.88);
   --shadow: rgba(0, 0, 0, 0.08);
+    --roller-gradient: linear-gradient(135deg, #1d4ed8, #3b82f6, #06b6d4);
 }
 
 html.dark {
