@@ -40,15 +40,20 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 	// ── Custom cursor ─────────────────────────────────────────────────
 	const circle = document.getElementById("cursor-circle")!;
 	let cx = 0, cy = 0, tx = 0, ty = 0;
+	let cursorVisible = false;
 
-	document.addEventListener("mousemove", (e) => {
+	window.addEventListener("mousemove", (e) => {
 		tx = e.clientX;
 		ty = e.clientY;
-		circle.style.opacity = "1";
+		if (!cursorVisible) {
+			circle.style.opacity = "1";
+			cursorVisible = true;
+		}
 	});
 
-	document.addEventListener("mouseleave", () => {
+	document.documentElement.addEventListener("mouseleave", () => {
 		circle.style.opacity = "0";
+		cursorVisible = false;
 	});
 
 	function moveCursor() {
@@ -58,6 +63,25 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 		requestAnimationFrame(moveCursor);
 	}
 	moveCursor();
+
+	// Hide circle over iframes but keep position synced
+	let overIframe = false;
+
+	document.querySelectorAll(".project-video").forEach((wrap) => {
+		wrap.addEventListener("mouseenter", () => {
+			overIframe = true;
+			circle.style.opacity = "0";
+		});
+		wrap.addEventListener("mouseleave", (e) => {
+			overIframe = false;
+			cx = (e as MouseEvent).clientX;
+			cy = (e as MouseEvent).clientY;
+			tx = cx;
+			ty = cy;
+			circle.style.transform = `translate(${cx}px, ${cy}px)`;
+			circle.style.opacity = "1";
+		});
+	});
 
 	// Grow cursor on hoverable text
 	const hoverTargets = "a, button, .chip, .nav-link, .mobile-nav-link, h1, h2, p, span";
