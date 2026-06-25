@@ -29,7 +29,7 @@ import { Icon } from "astro-icon/components";
     <div class="flex justify-end items-center min-w-0">
       <!-- Hamburger (mobile only) -->
       <button
-        class="hamburger-btn md:hidden"
+        class="hamburger-btn"
         id="hamburger-btn"
         aria-label="Toggle menu"
         aria-expanded="false"
@@ -81,7 +81,7 @@ import { Icon } from "astro-icon/components";
     </div>
 
     <!-- Mobile nav dropdown -->
-    <nav class="mobile-nav md:hidden" id="mobile-nav">
+    <nav class="mobile-nav" id="mobile-nav">
       <ul class="mobile-nav-list">
         <li><a href="#home" class="mobile-nav-link">Home</a></li>
         <li><a href="#about" class="mobile-nav-link">About</a></li>
@@ -298,6 +298,15 @@ import { Icon } from "astro-icon/components";
 
   .mobile-nav-link:hover {
     background: var(--border);
+  }
+
+  @media (min-width: 768px) {
+    .hamburger-btn {
+      display: none !important;
+    }
+    .mobile-nav {
+      display: none !important;
+    }
   }
 
   /* ── Gear button ── */
