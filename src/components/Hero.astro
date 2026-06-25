@@ -20,6 +20,13 @@ import translations, { type Lang } from "../i18n/translations";
       <br />
       <span class="hero-static" id="hero-finds">finds </span><span class="hero-roller" id="roller-bottom"><span class="roller-track" id="track-bottom"></span></span>
     </h1>
+    <div class="scroll-hint" id="scroll-hint">
+      <span>Scroll down</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14"></path>
+        <path d="m19 12-7 7-7-7"></path>
+      </svg>
+    </div>
   </div>
 </section>
 
@@ -328,5 +335,28 @@ import translations, { type Lang } from "../i18n/translations";
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+  }
+
+  .scroll-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 2.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: hint-fade-in 2s ease 3s forwards, hint-bounce 2s ease-in-out 5s infinite;
+  }
+
+  @keyframes hint-fade-in {
+    to { opacity: 1; }
+  }
+
+  @keyframes hint-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
   }
 </style>
