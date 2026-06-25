@@ -8,7 +8,7 @@ import translations from "../i18n/translations";
 </script>
 
 <header
-  class="sticky top-0 z-40 border-b border-transparent transition duration-200 ease-in-out w-full px-6 relative flex justify-between items-center"
+  class="sticky top-0 z-40 border-b border-transparent transition duration-200 ease-in-out w-full px-6 pt-4 pb-2 relative flex justify-between items-center"
 >
     <div class="flex shrink-0 items-center min-w-0">
       <a href="/" class="flex items-center gap-2">
@@ -31,8 +31,46 @@ import translations from "../i18n/translations";
         </li>
       </ul>
     </nav>
-    <div class="flex justify-end items-center min-w-0">
-      <!-- Hamburger (mobile only) -->
+    <div class="flex justify-end items-center min-w-0 gap-3">
+      <!-- Desktop: inline lang + theme -->
+      <div class="nav-controls">
+        <div class="lang-chips">
+          <button class="chip" data-lang="en">EN</button>
+          <button class="chip" data-lang="it">IT</button>
+        </div>
+        <button
+          class="theme-btn"
+          id="theme-toggle"
+          aria-label="Toggle dark mode"
+        >
+          <span class="theme-icon theme-icon--sun"><Icon name="lucide:sun" size={18} /></span>
+          <span class="theme-icon theme-icon--moon"><Icon name="lucide:moon" size={18} /></span>
+        </button>
+      </div>
+      <!-- Mobile: hamburger + settings -->
+      <div class="settings-wrap">
+        <button
+          class="settings-btn"
+          id="settings-btn"
+          aria-label="Settings"
+          aria-expanded="false"
+        >
+          <Icon name="lucide:settings" size={22} />
+        </button>
+        <!-- Settings panel (mobile only) -->
+        <div class="settings-panel" id="settings-panel">
+          <button class="chip" data-lang="en">EN</button>
+          <button class="chip" data-lang="it">IT</button>
+          <button
+            class="theme-btn"
+            id="mobile-theme-toggle"
+            aria-label="Toggle dark mode"
+          >
+            <span class="theme-icon theme-icon--sun"><Icon name="lucide:sun" size={18} /></span>
+            <span class="theme-icon theme-icon--moon"><Icon name="lucide:moon" size={18} /></span>
+          </button>
+        </div>
+      </div>
       <button
         class="hamburger-btn"
         id="hamburger-btn"
@@ -41,46 +79,6 @@ import translations from "../i18n/translations";
       >
         <Icon name="lucide:menu" size={24} />
       </button>
-      <!-- Gear trigger -->
-      <button
-        class="settings-btn"
-        id="settings-btn"
-        aria-label="Settings"
-        aria-expanded="false"
-      >
-        <Icon name="lucide:settings" size={24} />
-      </button>
-      <!-- Settings panel -->
-      <div class="settings-panel" id="settings-panel">
-        <!-- Language -->
-        <div class="panel-section">
-          <div class="section-label">Language</div>
-          <div class="lang-chips">
-            <button class="chip" data-lang="en">EN</button>
-            <button class="chip" data-lang="it">IT</button>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <!-- Theme -->
-        <div class="panel-section">
-          <div class="section-label">
-            <span class="theme-icon theme-icon--sun"
-              ><Icon name="lucide:sun" size={13} /></span
-            >
-            <span class="theme-icon theme-icon--moon"
-              ><Icon name="lucide:moon" size={13} /></span
-            >
-            <span id="theme-label">Light</span>
-          </div>
-          <button
-            class="toggle"
-            id="theme-toggle"
-            aria-label="Toggle dark mode"
-          >
-            <span class="toggle-thumb"></span>
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Mobile nav dropdown -->
@@ -114,7 +112,8 @@ import translations from "../i18n/translations";
   const settingsBtn = document.getElementById("settings-btn")!;
   const settingsPanel = document.getElementById("settings-panel")!;
   const themeToggle = document.getElementById("theme-toggle")!;
-  const themeLabel = document.getElementById("theme-label")!;
+  const mobileThemeToggle = document.getElementById("mobile-theme-toggle")!;
+  const themeLabel = document.getElementById("theme-label");
   const chips = document.querySelectorAll<HTMLButtonElement>(".chip");
 
   // ── Mobile menu ────────────────────────────────────────────────────
@@ -192,16 +191,17 @@ import translations from "../i18n/translations";
   // ── Dark mode ─────────────────────────────────────────────────────
   function applyTheme(dark: boolean) {
     document.documentElement.classList.toggle("dark", dark);
-    themeToggle.classList.toggle("on", dark);
-    themeLabel.textContent = dark ? "Dark" : "Light";
+    if (themeLabel) themeLabel.textContent = dark ? "Dark" : "Light";
     localStorage.setItem("theme", dark ? "dark" : "light");
   }
 
-  themeToggle.addEventListener("click", () => {
+  function toggleTheme() {
     applyTheme(!document.documentElement.classList.contains("dark"));
-  });
+  }
 
-  // Restore saved theme (or system preference)
+  themeToggle.addEventListener("click", toggleTheme);
+  mobileThemeToggle.addEventListener("click", toggleTheme);
+
   const savedTheme = localStorage.getItem("theme");
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   applyTheme(savedTheme ? savedTheme === "dark" : prefersDark);
@@ -213,22 +213,18 @@ import translations from "../i18n/translations";
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.5;
     min-width: 44px;
     min-height: 44px;
     cursor: pointer;
-    color: var(--fg);
+    color: var(--muted);
     background: none;
     border: none;
-    transition: opacity 0.15s;
+    transition: color 0.2s;
   }
 
-  .hamburger-btn:hover {
-    opacity: 1;
-  }
-
+  .hamburger-btn:hover,
   .hamburger-btn[aria-expanded="true"] {
-    opacity: 1;
+    color: var(--fg);
   }
 
   /* ── Mobile nav ── */
@@ -237,9 +233,9 @@ import translations from "../i18n/translations";
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 8px 24px var(--shadow);
+    background: transparent;
+    border-top: none;
+    box-shadow: none;
     overflow: hidden;
     display: grid;
     grid-template-rows: 0fr;
@@ -276,18 +272,22 @@ import translations from "../i18n/translations";
     padding: 0.5rem 0;
   }
 
+  .mobile-nav-list {
+    text-align: right;
+  }
+
   .mobile-nav-link {
     display: block;
     padding: 0.75rem 1.5rem;
-    color: var(--fg);
     text-decoration: none;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
     opacity: 0;
-    transform: translateX(-10px);
+    transform: translateX(10px);
     transition:
       opacity 0.3s ease,
       transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-      background 0.12s;
+      color 0.2s;
   }
 
   /* Opening: staggered top to bottom */
@@ -304,7 +304,7 @@ import translations from "../i18n/translations";
   /* Closing: staggered bottom to top (mirror of opening) */
   .mobile-nav.closing .mobile-nav-link {
     opacity: 0;
-    transform: translateX(-10px);
+    transform: translateX(10px);
   }
 
   .mobile-nav.closing li:nth-child(4) .mobile-nav-link { transition-delay: 0.04s; }
@@ -312,12 +312,61 @@ import translations from "../i18n/translations";
   .mobile-nav.closing li:nth-child(2) .mobile-nav-link { transition-delay: 0.16s; }
   .mobile-nav.closing li:nth-child(1) .mobile-nav-link { transition-delay: 0.22s; }
 
+  .mobile-nav-link {
+    color: var(--muted);
+  }
+
   .mobile-nav-link:hover {
-    background: var(--border);
+    color: var(--fg);
+  }
+
+  /* ── Nav links ── */
+  .nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover {
+    color: var(--fg);
+  }
+
+  /* ── Desktop nav controls ── */
+  .nav-controls {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+  }
+
+  .theme-btn:hover {
+    color: var(--fg);
   }
 
   @media (min-width: 768px) {
+    .nav-controls {
+      display: flex;
+    }
     .hamburger-btn {
+      display: none !important;
+    }
+    .settings-btn {
+      display: none !important;
+    }
+    .settings-panel {
       display: none !important;
     }
     .mobile-nav {
@@ -325,51 +374,51 @@ import translations from "../i18n/translations";
     }
   }
 
-  /* ── Gear button ── */
+  /* ── Gear button (mobile) ── */
   .settings-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.5;
     min-width: 44px;
     min-height: 44px;
     cursor: pointer;
-    backdrop-filter: blur(8px);
-    color: var(--fg);
+    background: none;
+    border: none;
+    color: var(--muted);
     transition:
-      background 0.15s,
-      transform 0.3s,
-      opacity 0.15s;
+      color 0.2s,
+      transform 0.3s;
   }
 
-  .settings-btn:hover {
-    opacity: 1;
+  .settings-btn:hover,
+  .settings-btn[aria-expanded="true"] {
+    color: var(--fg);
   }
 
   .settings-btn[aria-expanded="true"] {
     transform: rotate(60deg);
-    opacity: 1;
+  }
+
+  .settings-wrap {
+    position: relative;
   }
 
   /* ── Panel ── */
   .settings-panel {
     display: none;
+    flex-direction: column;
+    align-items: center;
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 4px);
     right: 0;
-    /* Full-width on small screens, fixed on larger */
-    width: calc(100vw - 2rem);
-    max-width: 220px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 8px 24px var(--shadow);
-    padding: 0.5rem 0;
+    background: transparent;
+    padding: 0.25rem 0;
     animation: pop-in 0.15s ease;
+    gap: 0.25rem;
   }
 
   .settings-panel.open {
-    display: block;
+    display: flex;
   }
 
   @keyframes pop-in {
@@ -387,10 +436,9 @@ import translations from "../i18n/translations";
   .panel-section {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.65rem 0.85rem;
+    justify-content: flex-end;
+    padding: 0.4rem 0.85rem;
     gap: 0.5rem;
-    min-height: 44px;
   }
 
   .section-label {
@@ -404,36 +452,35 @@ import translations from "../i18n/translations";
 
   .divider {
     height: 1px;
-    background: var(--border);
-    margin: 0.2rem 0;
+    background: transparent;
+    margin: 0.1rem 0;
   }
 
   /* ── Language chips ── */
   .lang-chips {
     display: flex;
-    gap: 0.25rem;
+    gap: 0.15rem;
   }
 
   .chip {
-    padding: 0.35rem 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    font-size: 0.65rem;
+    padding: 0.25rem 0.4rem;
+    border: none;
+    border-radius: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
     cursor: pointer;
     background: transparent;
-    color: var(--fg);
-    transition:
-      background 0.12s,
-      border-color 0.12s;
+    color: var(--muted);
+    transition: color 0.2s;
   }
 
   .chip:hover {
-    background: var(--border);
+    color: var(--fg);
   }
+
   .chip.active {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
+    color: var(--fg);
+    font-weight: 500;
   }
 
   /* ── Theme icon swap ── */
@@ -452,38 +499,4 @@ import translations from "../i18n/translations";
     display: flex;
   }
 
-  /* ── Theme toggle ── */
-  .toggle {
-    position: relative;
-    width: 36px;
-    height: 20px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--border);
-    cursor: pointer;
-    transition:
-      background 0.2s,
-      border-color 0.2s;
-    flex-shrink: 0;
-  }
-
-  .toggle.on {
-    background: var(--fg);
-    border-color: var(--fg);
-  }
-
-  .toggle-thumb {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--bg);
-    transition: transform 0.2s;
-  }
-
-  .toggle.on .toggle-thumb {
-    transform: translateX(16px);
-  }
 </style>
