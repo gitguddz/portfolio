@@ -29,6 +29,9 @@ import translations from "../i18n/translations";
         <li>
           <a href="#contact" class="nav-link" data-nav-i18n="nav.contact">Contact</a>
         </li>
+        <li>
+          <a href="/cv_en.pdf" download target="_blank" class="nav-link cv-link cv-download" data-nav-i18n="nav.cv">CV</a>
+        </li>
       </ul>
     </nav>
     <div class="flex justify-end items-center min-w-0 gap-3">
@@ -88,6 +91,7 @@ import translations from "../i18n/translations";
         <li><a href="#about" class="mobile-nav-link" data-nav-i18n="nav.about">About</a></li>
         <li><a href="#projects" class="mobile-nav-link" data-nav-i18n="nav.projects">Projects</a></li>
         <li><a href="#contact" class="mobile-nav-link" data-nav-i18n="nav.contact">Contact</a></li>
+        <li><a href="/cv_en.pdf" download target="_blank" class="mobile-nav-link cv-download" data-nav-i18n="nav.cv">CV</a></li>
       </ul>
     </nav>
 </header>
@@ -188,6 +192,19 @@ import translations from "../i18n/translations";
   });
 
   applyLang(localStorage.getItem("lang") ?? "en", false);
+
+  // ── CV download link per language ─────────────────────────────────
+  const cvMap: Record<string, string> = { en: "/cv_en.pdf", it: "/cv_ita.pdf" };
+
+  function updateCvLinks() {
+    const lang = document.documentElement.lang || "en";
+    const href = cvMap[lang] ?? cvMap["en"];
+    document.querySelectorAll<HTMLAnchorElement>(".cv-download").forEach((a) => {
+      a.href = href;
+    });
+  }
+
+  updateCvLinks();
 
   // ── Dark mode ─────────────────────────────────────────────────────
   function applyTheme(dark: boolean) {
