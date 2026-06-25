@@ -1,0 +1,165 @@
+---
+import translations from "../i18n/translations";
+
+const projects = [
+  {
+    id: "3oVf5oVtqTs?si=ORZ3huwbjTQu8j1u",
+    titleKey: "projects.01.title",
+    descKey: "projects.01.desc",
+  },
+  {
+    id: "y2OoGlplzxI?si=IFovXCywAerX5LJm",
+    titleKey: "projects.02.title",
+    descKey: "projects.02.desc",
+  },
+  {
+    id: "TYojLfhZbak?si=v7Cwlh4a9ZJWU04J",
+    titleKey: "projects.03.title",
+    descKey: "projects.03.desc",
+  },
+  {
+    id: "bl3Ecbjab9U?si=4G9m01wGEKkzMJv8",
+    titleKey: "projects.04.title",
+    descKey: "projects.04.desc",
+  },
+];
+---
+
+<script is:inline define:vars={{ translations }}>
+  window.__projectsTranslations = translations;
+</script>
+
+<section id="projects" class="projects">
+  <h2 class="projects-heading" data-proj-i18n="projects.heading">Projects</h2>
+  <div class="projects-grid">
+    {projects.map((p) => (
+      <div class="project-card">
+        <div class="project-video">
+          <iframe
+            src={`https://www.youtube.com/embed/${p.id}`}
+            title="Video"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+        <div class="project-info">
+          <h3 class="project-title" data-proj-i18n={p.titleKey}>Project title</h3>
+          <p class="project-desc" data-proj-i18n={p.descKey}>Project description</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const projTr = (window as any).__projectsTranslations as Record<string, Record<string, string>>;
+
+  function applyProjectsLang() {
+    const lang = document.documentElement.lang || "en";
+    document.querySelectorAll<HTMLElement>("[data-proj-i18n]").forEach((el) => {
+      const key = el.dataset.projI18n!;
+      el.textContent = projTr[lang]?.[key] ?? projTr["en"][key] ?? key;
+    });
+  }
+
+  applyProjectsLang();
+
+  // Fade in cards on scroll
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  document.querySelectorAll(".project-card").forEach((card) => {
+    observer.observe(card);
+  });
+</script>
+
+<style>
+  .projects {
+    padding: 6rem 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .projects-heading {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 100;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 3rem;
+    text-align: center;
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .projects-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  .project-card {
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .project-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .project-video {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--border);
+  }
+
+  .project-video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .project-info {
+    padding: 1.2rem 0.25rem 0;
+  }
+
+  .project-title {
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--fg);
+    margin: 0 0 0.4rem;
+  }
+
+  .project-desc {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 0;
+  }
+</style>
