@@ -40,6 +40,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "projects.03.desc": "Shot by me & GOSHA, edited by GOSHA (Jakub Beyger).",
     "projects.04.title": "The Answer is Not a Small Hut in Poland",
     "projects.04.desc": "Shot by me, edited by GOSHA (Jakub Beyger).",
+    "contact.heading": "Get in touch",
+    "contact.sub": "Have a project in mind? Let's talk.",
   },
   it: {
     "nav.home": "Home",
@@ -73,6 +75,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "projects.03.desc": "Girato da me e GOSHA, montato da GOSHA (Jakub Beyger).",
     "projects.04.title": "The Answer is Not a Small Hut in Poland",
     "projects.04.desc": "Girato da me, montato da GOSHA (Jakub Beyger).",
+    "contact.heading": "Contattami",
+    "contact.sub": "Hai un progetto in mente? Parliamone.",
   },
 };
 
