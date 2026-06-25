@@ -1,0 +1,128 @@
+---
+import translations from "../i18n/translations";
+---
+
+<script is:inline define:vars={{ translations }}>
+  window.__footerTranslations = translations;
+</script>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-name">Sabri Akbas</span>
+        <p class="footer-tagline" data-footer-i18n="footer.tagline">Developer & Filmmaker</p>
+      </div>
+      <div class="footer-links">
+        <a href="mailto:sabriak60@gmail.com">Email</a>
+        <a href="https://www.instagram.com/sabrii.akbas" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://youtube.com/@eeth5r" target="_blank" rel="noopener">YouTube</a>
+        <a href="https://www.linkedin.com/in/sabri-akbas-4b887630a" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/gitguddz" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">&copy; <span id="footer-year"></span> Sabri Akbas. <span data-footer-i18n="footer.rights">All rights reserved.</span></p>
+      <p class="footer-legal" data-footer-i18n="footer.legal">This website does not collect personal data. No cookies are used for tracking or profiling purposes.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const footerTr = (window as any).__footerTranslations as Record<string, Record<string, string>>;
+
+  function applyFooterLang() {
+    const lang = document.documentElement.lang || "en";
+    document.querySelectorAll<HTMLElement>("[data-footer-i18n]").forEach((el) => {
+      const key = el.dataset.footerI18n!;
+      el.textContent = footerTr[lang]?.[key] ?? footerTr["en"][key] ?? key;
+    });
+  }
+
+  applyFooterLang();
+
+  document.getElementById("footer-year")!.textContent = String(new Date().getFullYear());
+</script>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 1.5rem 2rem;
+    margin-top: 4rem;
+  }
+
+  .footer-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .footer-brand {
+    min-width: 0;
+  }
+
+  .footer-name {
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--fg);
+  }
+
+  .footer-tagline {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0.3rem 0 0;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+  }
+
+  .footer-links a {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover {
+    color: var(--fg);
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+
+  .footer-copy {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .footer-legal {
+    font-size: 0.7rem;
+    color: var(--muted);
+    opacity: 0.7;
+    margin: 0;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 767px) {
+    .footer-top {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  }
+</style>

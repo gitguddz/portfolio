@@ -43,6 +43,9 @@ const translations: Record<Lang, Record<string, string>> = {
     "projects.04.desc": "Shot by me, edited by GOSHA (Jakub Beyger).",
     "contact.heading": "Get in touch",
     "contact.sub": "Have a project in mind? Let's talk.",
+    "footer.tagline": "Developer & Filmmaker",
+    "footer.rights": "All rights reserved.",
+    "footer.legal": "This website does not collect personal data. No cookies are used for tracking or profiling purposes.",
   },
   it: {
     "nav.home": "Home",
@@ -79,6 +82,9 @@ const translations: Record<Lang, Record<string, string>> = {
     "projects.04.desc": "Girato da me, montato da GOSHA (Jakub Beyger).",
     "contact.heading": "Contattami",
     "contact.sub": "Hai un progetto in mente? Parliamone.",
+    "footer.tagline": "Sviluppatore & Filmmaker",
+    "footer.rights": "Tutti i diritti riservati.",
+    "footer.legal": "Questo sito non raccoglie dati personali. Non vengono utilizzati cookie per tracciamento o profilazione.",
   },
 };
 
