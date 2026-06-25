@@ -322,15 +322,11 @@ import translations, { type Lang } from "../i18n/translations";
     flex-direction: column;
   }
 
-  .roller-track > span {
+  .roller-track > :global(span) {
     height: 1.3em;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: var(--roller-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 </style>
