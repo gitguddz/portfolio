@@ -26,6 +26,7 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 		<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
 	</head>
 	<body class="intro">
+		<div class="cursor-circle" id="cursor-circle"></div>
 		<NavBar />
 		<main>
 			<slot/>
@@ -35,6 +36,41 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 
 <script>
 	import Lenis from "lenis";
+
+	// ── Custom cursor ─────────────────────────────────────────────────
+	const circle = document.getElementById("cursor-circle")!;
+	let cx = 0, cy = 0, tx = 0, ty = 0;
+
+	document.addEventListener("mousemove", (e) => {
+		tx = e.clientX;
+		ty = e.clientY;
+		circle.style.opacity = "1";
+	});
+
+	document.addEventListener("mouseleave", () => {
+		circle.style.opacity = "0";
+	});
+
+	function moveCursor() {
+		cx += (tx - cx) * 0.5;
+		cy += (ty - cy) * 0.5;
+		circle.style.transform = `translate(${cx}px, ${cy}px)`;
+		requestAnimationFrame(moveCursor);
+	}
+	moveCursor();
+
+	// Grow cursor on hoverable text
+	const hoverTargets = "a, button, .chip, .nav-link, .mobile-nav-link, h1, h2, p, span";
+	document.addEventListener("mouseover", (e) => {
+		if ((e.target as HTMLElement).closest(hoverTargets)) {
+			circle.classList.add("cursor-hover");
+		}
+	});
+	document.addEventListener("mouseout", (e) => {
+		if ((e.target as HTMLElement).closest(hoverTargets)) {
+			circle.classList.remove("cursor-hover");
+		}
+	});
 
 	const lenis = new Lenis({
 		duration: 1.2,
