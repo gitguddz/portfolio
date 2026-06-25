@@ -47,6 +47,18 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 	}
 	requestAnimationFrame(raf);
 
+	document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
+		anchor.addEventListener("click", (e) => {
+			const id = anchor.getAttribute("href");
+			if (!id || id === "#") return;
+			const target = document.querySelector(id);
+			if (!target) return;
+			e.preventDefault();
+			const offset = id === "#about" ? window.innerHeight * 0.75 : 0;
+			lenis.scrollTo(target as HTMLElement, { offset, duration: 2 });
+		});
+	});
+
 	const body = document.body;
 
 	setTimeout(() => {
