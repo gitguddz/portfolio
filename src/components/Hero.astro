@@ -85,6 +85,19 @@
     return new Promise((r) => setTimeout(r, ms));
   }
 
+  async function stepRoller(track: HTMLElement, step: number): Promise<number> {
+    step++;
+    await slideTrack(track, step);
+    if (step >= wordCount) {
+      await sleep(50);
+      track.style.transition = "none";
+      track.style.transform = "translateY(0)";
+      track.getBoundingClientRect();
+      return 0;
+    }
+    return step;
+  }
+
   async function loop() {
     let stepTop = 0;
     let stepBottom = 0;
@@ -92,23 +105,9 @@
 
     while (true) {
       if (flipTop) {
-        stepTop++;
-        if (stepTop >= wordCount) {
-          trackTop.style.transition = "none";
-          trackTop.style.transform = "translateY(0)";
-          trackTop.getBoundingClientRect();
-          stepTop = 1;
-        }
-        await slideTrack(trackTop, stepTop);
+        stepTop = await stepRoller(trackTop, stepTop);
       } else {
-        stepBottom++;
-        if (stepBottom >= wordCount) {
-          trackBottom.style.transition = "none";
-          trackBottom.style.transform = "translateY(0)";
-          trackBottom.getBoundingClientRect();
-          stepBottom = 1;
-        }
-        await slideTrack(trackBottom, stepBottom);
+        stepBottom = await stepRoller(trackBottom, stepBottom);
       }
       flipTop = !flipTop;
       await sleep(2000);
@@ -270,17 +269,6 @@
     font-style: normal;
     font-weight: 400;
     letter-spacing: 0.02em;
-    background: linear-gradient(135deg, #1d4ed8, #3b82f6, #06b6d4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  :global(html.dark) .hero-roller {
-    background: linear-gradient(135deg, #60a5fa, #38bdf8, #22d3ee);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   .roller-track {
@@ -294,5 +282,9 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    background: var(--roller-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 </style>
