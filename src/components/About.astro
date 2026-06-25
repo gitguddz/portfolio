@@ -1,0 +1,322 @@
+---
+import translations from "../i18n/translations";
+---
+
+<script is:inline define:vars={{ translations }}>
+  window.__aboutTranslations = translations;
+</script>
+
+<section id="about" class="about">
+  <div class="about-sticky">
+    <!-- <canvas id="about-canvas"></canvas> -->
+    <div class="about-cards">
+      <div class="about-card about-card--split" data-card="0">
+        <div class="card-left">
+          <span class="card-number" data-i18n="about.01.number">01</span>
+          <h2 class="card-title" data-i18n="about.01.title">About me</h2>
+          <p class="card-text" data-i18n-html="about.01.text">Developer and filmmaker based in Lugano.<br/>I blend technology with visual storytelling to create experiences that stand out.</p>
+        </div>
+        <div class="card-right">
+          <div class="card-photo">
+            <img src="/me.png" alt="Sabri Akbas" />
+          </div>
+        </div>
+      </div>
+      <div class="about-card about-card--split" data-card="1">
+        <div class="card-left">
+          <span class="card-number" data-i18n="about.02.number">02</span>
+          <h2 class="card-title" data-i18n="about.02.title">What I do</h2>
+          <p class="card-text" data-i18n-html="about.02.text">From building performant web applications to directing music videos and cinematic content — I work across both worlds.</p>
+        </div>
+        <div class="card-right">
+          <div class="card-photo card-video-wrap">
+            <video id="about-video" autoplay muted loop playsinline disablepictureinpicture>
+              <source src="/j4n.mp4" type="video/mp4" />
+            </video>
+            <button class="mute-btn" id="mute-btn" aria-label="Unmute video">
+              <svg class="mute-icon mute-icon--off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+              <svg class="mute-icon mute-icon--on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="about-card about-card--split" data-card="2">
+        <div class="card-left">
+          <span class="card-number" data-i18n="about.03.number">03</span>
+          <h2 class="card-title" data-i18n="about.03.title">Tools & craft</h2>
+          <p class="card-text" data-i18n-html="about.03.text">Java, Spring, Docker, React, Typescript and many more on the dev side.<br/><br/>DaVinci Resolve, Premier Pro, After Effects, and cinema camera on the creative side.</p>
+        </div>
+        <div class="card-right">
+          <div class="card-photo">
+            <img src="/desk.png" alt="Tools & craft" />
+          </div>
+        </div>
+      </div>
+      <div class="about-card about-card--split" data-card="3">
+        <div class="card-left">
+          <span class="card-number" data-i18n="about.04.number">04</span>
+          <h2 class="card-title" data-i18n="about.04.title">Philosophy</h2>
+          <p class="card-text" data-i18n-html="about.04.text">Every detail matters. Whether it's code or a frame — precision, intention, and taste drive everything I make.</p>
+        </div>
+        <div class="card-right">
+          <div class="card-photo">
+            <img src="/moto.jpg" alt="Philosophy" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ── i18n ──────────────────────────────────────────────────────────
+  const aboutTr = (window as any).__aboutTranslations as Record<string, Record<string, string>>;
+
+  function applyAboutLang() {
+    const lang = document.documentElement.lang || "en";
+    const t = (key: string) => aboutTr[lang]?.[key] ?? aboutTr["en"][key] ?? key;
+
+    document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((el) => {
+      el.textContent = t(el.dataset.i18n!);
+    });
+    document.querySelectorAll<HTMLElement>("[data-i18n-html]").forEach((el) => {
+      el.innerHTML = t(el.dataset.i18nHtml!);
+    });
+  }
+
+  applyAboutLang();
+  window.addEventListener("lang-change", () => applyAboutLang());
+
+  // ── Video mute toggle ────────────────────────────────────────────
+  const video = document.getElementById("about-video") as HTMLVideoElement;
+  const muteBtn = document.getElementById("mute-btn")!;
+
+  muteBtn.addEventListener("click", () => {
+    video.muted = !video.muted;
+    muteBtn.classList.toggle("unmuted", !video.muted);
+    muteBtn.setAttribute("aria-label", video.muted ? "Unmute video" : "Mute video");
+  });
+
+  function checkVideoPlay(progress: number) {
+    const videoVisible = progress >= 1 && progress < 3;
+    if (videoVisible) {
+      if (video.paused) video.play().catch(() => {});
+    } else {
+      if (!video.paused) video.pause();
+    }
+  }
+
+  // ── Card scroll animation ────────────────────────────────────────
+  const section = document.querySelector(".about") as HTMLElement;
+  const cards = document.querySelectorAll<HTMLElement>(".about-card");
+  const totalCards = cards.length;
+
+  function onScroll() {
+    const rect = section.getBoundingClientRect();
+    const sectionH = section.offsetHeight;
+    const viewH = window.innerHeight;
+
+    const scrolled = -rect.top;
+    const scrollRange = sectionH - viewH;
+    const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
+
+    const cardProgress = progress * totalCards;
+
+    checkVideoPlay(cardProgress);
+
+    cards.forEach((card, i) => {
+      const p = Math.max(0, Math.min(1, cardProgress - i));
+
+      if (p <= 0) {
+        card.style.opacity = "0";
+        card.style.transform = "translateY(60px) scale(0.95)";
+        card.style.pointerEvents = "none";
+      } else if (p < 1) {
+        const ease = 1 - Math.pow(1 - p, 3);
+        card.style.opacity = String(ease);
+        card.style.transform = `translateY(${60 * (1 - ease)}px) scale(${0.95 + 0.05 * ease})`;
+        card.style.pointerEvents = "auto";
+      } else {
+        const exit = Math.max(0, Math.min(1, cardProgress - i - 1));
+        const exitEase = 1 - Math.pow(1 - exit, 2);
+
+        if (i < totalCards - 1) {
+          card.style.opacity = String(1 - exitEase * 0.6);
+          card.style.transform = `translateY(${-30 * exitEase}px) scale(${1 - 0.05 * exitEase})`;
+          card.style.pointerEvents = exitEase > 0.5 ? "none" : "auto";
+        } else {
+          card.style.opacity = "1";
+          card.style.transform = "translateY(0) scale(1)";
+          card.style.pointerEvents = "auto";
+        }
+      }
+    });
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+</script>
+
+<style>
+  .about {
+    position: relative;
+    height: 400vh;
+  }
+
+  .about-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #about-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .about-cards {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1000px;
+    height: 320px;
+  }
+
+  .about-card {
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    top: 0;
+    bottom: 0;
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    transform: translateY(60px) scale(0.95);
+    will-change: transform, opacity;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .card-number {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  .card-title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 100;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 1rem;
+  }
+
+  .card-text {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 0;
+    max-width: 480px;
+  }
+
+  .about-card--split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 1.5rem;
+    height: 100%;
+  }
+
+  .card-left {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .card-right {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .card-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--border);
+    position: relative;
+  }
+
+  .card-photo img,
+  .card-photo video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-video-wrap {
+    position: relative;
+  }
+
+  .mute-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    z-index: 2;
+  }
+
+  .mute-btn:hover {
+    opacity: 1;
+  }
+
+  .mute-icon--on {
+    display: none;
+  }
+
+  .mute-btn.unmuted .mute-icon--off {
+    display: none;
+  }
+
+  .mute-btn.unmuted .mute-icon--on {
+    display: block;
+  }
+</style>

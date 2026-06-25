@@ -1,11 +1,13 @@
 ---
 import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
 import Layout from '../layouts/Layout.astro';
 import { getLangFromUrl, t } from '../i18n/utils';
 ---
 
 <Layout title={t(getLangFromUrl(Astro.url), "site.title")} description="Welcome to my portfolio site! Here you'll find my projects, skills, and contact information." lang={getLangFromUrl(Astro.url)}>
   <Hero />
+  <About />
 </Layout>
 
 

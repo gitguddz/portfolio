@@ -17,6 +17,7 @@ html.dark {
   --border: #2e2e2e;
   --surface: rgba(18, 18, 18, 0.88);
   --shadow: rgba(0, 0, 0, 0.4);
+  --roller-gradient: linear-gradient(135deg, #60a5fa, #38bdf8, #22d3ee);
 }
 
 html.lenis, html.lenis body {

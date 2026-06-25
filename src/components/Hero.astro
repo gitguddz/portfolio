@@ -1,5 +1,10 @@
 ---
+import translations, { type Lang } from "../i18n/translations";
 ---
+
+<script is:inline define:vars={{ translations }}>
+  window.__heroTranslations = translations;
+</script>
 
 <section id="home" class="hero">
   <div class="hero-shapes" aria-hidden="true">
@@ -11,9 +16,9 @@
   </div>
   <div class="hero-content">
     <h1 class="hero-title">
-      <span class="hero-static">where </span><span class="hero-roller" id="roller-top"><span class="roller-track" id="track-top"><span>code</span><span>logic</span><span>design</span><span>craft</span><span>pixels</span><span>code</span></span></span>
+      <span class="hero-static" id="hero-where">where </span><span class="hero-roller" id="roller-top"><span class="roller-track" id="track-top"></span></span>
       <br />
-      <span class="hero-static">finds </span><span class="hero-roller" id="roller-bottom"><span class="roller-track" id="track-bottom"><span>cinema</span><span>motion</span><span>vision</span><span>stories</span><span>rhythm</span><span>cinema</span></span></span>
+      <span class="hero-static" id="hero-finds">finds </span><span class="hero-roller" id="roller-bottom"><span class="roller-track" id="track-bottom"></span></span>
     </h1>
   </div>
 </section>
@@ -58,6 +63,29 @@
   const trackBottom = document.getElementById("track-bottom")!;
   const rollerTop = document.getElementById("roller-top")!;
   const rollerBottom = document.getElementById("roller-bottom")!;
+  const heroWhere = document.getElementById("hero-where")!;
+  const heroFinds = document.getElementById("hero-finds")!;
+
+  const allTranslations = (window as any).__heroTranslations as Record<string, Record<string, string>>;
+
+  function getLang(): string {
+    return document.documentElement.lang || "en";
+  }
+
+  function tr(key: string): string {
+    const lang = getLang();
+    return allTranslations[lang]?.[key] ?? allTranslations["en"][key] ?? key;
+  }
+
+  function buildTrack(track: HTMLElement, wordsStr: string) {
+    track.innerHTML = "";
+    const words = wordsStr.split(",");
+    words.forEach((w) => {
+      const span = document.createElement("span");
+      span.textContent = w;
+      track.appendChild(span);
+    });
+  }
 
   function setFixedWidth(roller: HTMLElement) {
     const spans = roller.querySelectorAll<HTMLElement>(".roller-track > span");
@@ -66,10 +94,28 @@
     roller.style.width = `${maxW + 8}px`;
   }
 
-  setFixedWidth(rollerTop);
-  setFixedWidth(rollerBottom);
+  let wordCount = 5;
 
-  const wordCount = 5;
+  function applyLangToHero() {
+    heroWhere.textContent = tr("hero.where");
+    heroFinds.textContent = tr("hero.finds");
+    buildTrack(trackTop, tr("hero.top_words"));
+    buildTrack(trackBottom, tr("hero.bottom_words"));
+    wordCount = tr("hero.top_words").split(",").length - 1;
+    setFixedWidth(rollerTop);
+    setFixedWidth(rollerBottom);
+  }
+
+  applyLangToHero();
+
+  window.addEventListener("lang-change", () => {
+    applyLangToHero();
+    trackTop.style.transition = "none";
+    trackTop.style.transform = "translateY(0)";
+    trackBottom.style.transition = "none";
+    trackBottom.style.transform = "translateY(0)";
+  });
+
   const stepH = rollerTop.offsetHeight;
 
   function slideTrack(track: HTMLElement, step: number): Promise<void> {
