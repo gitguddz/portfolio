@@ -107,7 +107,7 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 		easing: (t: number) => 1 - Math.pow(1 - t, 4),
 		smoothWheel: true,
 		touchMultiplier: 1.5,
-		wheelMultiplier: 0.8,
+		wheelMultiplier: 1,
 	});
 
 	function raf(time: number) {
