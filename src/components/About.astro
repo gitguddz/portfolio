@@ -100,112 +100,75 @@
     muteBtn.setAttribute("aria-label", video.muted ? "Unmute video" : "Mute video");
   });
 
-  function checkVideoPlay(progress: number) {
-    const videoVisible = progress >= 1 && progress < 3;
-    if (videoVisible) {
+  // ── Card switching ──────────────────────────────────────────────
+  const section = document.querySelector(".about") as HTMLElement;
+  const cards = document.querySelectorAll<HTMLElement>(".about-card");
+  const totalCards = cards.length;
+  const lenis = (window as any).__lenis;
+  let activeCard = -1;
+
+  function showCard(index: number) {
+    if (index === activeCard) return;
+    activeCard = index;
+    cards.forEach((card, i) => card.classList.toggle("active", i === index));
+    if (index === 1) {
       if (video.paused) video.play().catch(() => {});
     } else {
       if (!video.paused) video.pause();
     }
   }
 
-  // ── Card scroll animation ────────────────────────────────────────
-  const section = document.querySelector(".about") as HTMLElement;
-  const cards = document.querySelectorAll<HTMLElement>(".about-card");
-  const totalCards = cards.length;
-
-  function onScroll() {
-    const rect = section.getBoundingClientRect();
-    const sectionH = section.offsetHeight;
-    const viewH = window.innerHeight;
-
-    const scrolled = -rect.top;
-    const scrollRange = sectionH - viewH;
-    const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
-
-    const cardProgress = progress * totalCards;
-
-    checkVideoPlay(cardProgress);
-
-    cards.forEach((card, i) => {
-      const local = cardProgress - i;
-
-      if (local <= 0) {
-        // Not yet visible
-        card.style.opacity = "0";
-        card.style.transform = "translateY(60px) scale(0.95)";
-        card.style.pointerEvents = "none";
-      } else if (local < 0.2) {
-        // Enter: fast fade in (first 20%)
-        const t = local / 0.2;
-        const ease = 1 - Math.pow(1 - t, 2);
-        card.style.opacity = String(ease);
-        card.style.transform = `translateY(${60 * (1 - ease)}px) scale(${0.95 + 0.05 * ease})`;
-        card.style.pointerEvents = ease > 0.5 ? "auto" : "none";
-      } else if (local < 0.8) {
-        // Hold: fully visible (middle 60%)
-        card.style.opacity = "1";
-        card.style.transform = "translateY(0) scale(1)";
-        card.style.pointerEvents = "auto";
-      } else if (local < 1 && i < totalCards - 1) {
-        // Exit: fast fade out (last 20%)
-        const t = (local - 0.8) / 0.2;
-        const ease = 1 - Math.pow(1 - t, 2);
-        card.style.opacity = String(1 - ease);
-        card.style.transform = `translateY(${-30 * ease}px) scale(${1 - 0.05 * ease})`;
-        card.style.pointerEvents = ease > 0.3 ? "none" : "auto";
-      } else {
-        // Last card stays or fully exited
-        if (i === totalCards - 1) {
-          card.style.opacity = "1";
-          card.style.transform = "translateY(0) scale(1)";
-          card.style.pointerEvents = "auto";
-        } else {
-          card.style.opacity = "0";
-          card.style.pointerEvents = "none";
-        }
-      }
-    });
+  function getCardIndex() {
+    const sectionTop = section.offsetTop;
+    const scrollRange = section.offsetHeight - window.innerHeight;
+    const scrolled = window.scrollY - sectionTop;
+    return Math.max(0, Math.min(totalCards - 1, Math.floor((scrolled / scrollRange) * totalCards)));
   }
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  function getSnapTarget(index: number) {
+    const sectionTop = section.offsetTop;
+    const scrollRange = section.offsetHeight - window.innerHeight;
+    return sectionTop + (index / totalCards) * scrollRange;
+  }
 
-  // ── Snap to nearest full-opacity card ─────────────────────────────
-  const lenis = (window as any).__lenis;
+  // Show first card when section becomes visible
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && activeCard === -1) showCard(0);
+  }, { threshold: 0.1 }).observe(section);
+
+  // Update card on scroll
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    const sectionTop = section.offsetTop;
+    const scrollRange = section.offsetHeight - window.innerHeight;
+    if (y >= sectionTop && y <= sectionTop + scrollRange) {
+      showCard(getCardIndex());
+    }
+  }, { passive: true });
+
+  // Snap after scroll stops
   let snapTimer: ReturnType<typeof setTimeout>;
   let snapping = false;
-
-  function snap() {
-    const sectionTop = section.offsetTop;
-    const sectionH = section.offsetHeight;
-    const viewH = window.innerHeight;
-    const scrollRange = sectionH - viewH;
-    const y = window.scrollY;
-
-    if (y < sectionTop || y > sectionTop + scrollRange) return;
-
-    const scrolled = y - sectionTop;
-    const cardSize = scrollRange / totalCards;
-    const rawCard = scrolled / cardSize;
-    const frac = rawCard - Math.floor(rawCard);
-    const targetCard = frac > 0.1 ? Math.ceil(rawCard) : Math.floor(rawCard);
-    const nearest = sectionTop + Math.max(0, Math.min(totalCards, targetCard)) * cardSize;
-
-    if (Math.abs(y - nearest) < 3) return;
-
-    snapping = true;
-    lenis.scrollTo(nearest, {
-      duration: 0.6,
-      easing: (t: number) => 1 - Math.pow(1 - t, 3),
-      onComplete: () => { snapping = false; },
-    });
-  }
 
   window.addEventListener("scroll", () => {
     if (snapping) return;
     clearTimeout(snapTimer);
-    snapTimer = setTimeout(snap, 100);
+    snapTimer = setTimeout(() => {
+      const y = window.scrollY;
+      const sectionTop = section.offsetTop;
+      const scrollRange = section.offsetHeight - window.innerHeight;
+      if (y < sectionTop || y > sectionTop + scrollRange) return;
+
+      const target = getSnapTarget(getCardIndex());
+      if (Math.abs(y - target) < 3) return;
+
+      snapping = true;
+      lenis.scrollTo(target, {
+        duration: 0.8,
+        easing: (t: number) => 1 - Math.pow(1 - t, 3),
+        onComplete: () => { snapping = false; },
+      });
+    }, 120);
   }, { passive: true });
 
   // ── Particles (desktop only) ───────────────────────────────────────
@@ -408,10 +371,17 @@
     border-radius: 16px;
     background: var(--surface);
     opacity: 0;
-    transform: translateY(60px) scale(0.95);
-    will-change: transform, opacity;
+    transform: translateY(40px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
     overflow: hidden;
     box-sizing: border-box;
+  }
+
+  .about-card.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
   }
 
   @media (min-width: 768px) {

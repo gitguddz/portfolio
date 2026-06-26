@@ -146,7 +146,7 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 			const target = document.querySelector(id);
 			if (!target) return;
 			e.preventDefault();
-			const offset = id === "#about" ? window.innerHeight * 0.75 : 0;
+			const offset = 0;
 			lenis.scrollTo(target as HTMLElement, { offset, duration: 2 });
 		});
 	});
