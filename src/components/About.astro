@@ -159,6 +159,40 @@
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
+  // ── Snap to nearest card ────────────────────────────────────────
+  const lenis = (window as any).__lenis;
+  let snapTimer: ReturnType<typeof setTimeout>;
+  let snapping = false;
+
+  function snap() {
+    const sectionTop = section.offsetTop;
+    const sectionH = section.offsetHeight;
+    const viewH = window.innerHeight;
+    const scrollRange = sectionH - viewH;
+    const y = window.scrollY;
+
+    if (y < sectionTop || y > sectionTop + scrollRange) return;
+
+    const scrolled = y - sectionTop;
+    const cardSize = scrollRange / totalCards;
+    const nearest = sectionTop + Math.round(scrolled / cardSize) * cardSize;
+
+    if (Math.abs(y - nearest) < 5) return;
+
+    snapping = true;
+    lenis.scrollTo(nearest, {
+      duration: 0.8,
+      easing: (t: number) => 1 - Math.pow(1 - t, 3),
+      onComplete: () => { snapping = false; },
+    });
+  }
+
+  window.addEventListener("scroll", () => {
+    if (snapping) return;
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(snap, 80);
+  }, { passive: true });
+
   // ── Particles (desktop only) ───────────────────────────────────────
   const isTouchDevice = !window.matchMedia("(hover: hover)").matches;
 
@@ -312,7 +346,7 @@
 <style>
   .about {
     position: relative;
-    height: 400vh;
+    height: 250vh;
   }
 
   .about-sticky {
