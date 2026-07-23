@@ -2,6 +2,7 @@
 import NavBar from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
+import translations from '../i18n/translations';
 
 interface Props {
   title: string;
@@ -23,9 +24,13 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 		<script is:inline>
 			document.documentElement.lang = localStorage.getItem("lang") || "en";
 		</script>
+		<script is:inline define:vars={{ translations }}>
+			window.__translations = translations;
+		</script>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
+		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" />
+		<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 	</head>
 	<body class="intro">
 		<div class="cursor-circle" id="cursor-circle"></div>
@@ -40,71 +45,69 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 <script>
 	import Lenis from "lenis";
 
-	// ── Custom cursor ─────────────────────────────────────────────────
-	const circle = document.getElementById("cursor-circle")!;
-	let cx = 0, cy = 0, tx = 0, ty = 0;
-	let cursorVisible = false;
+	const hasPointer = window.matchMedia("(hover: hover)").matches;
 
-	window.addEventListener("mousemove", (e) => {
-		tx = e.clientX;
-		ty = e.clientY;
-		if (!cursorVisible) {
-			circle.style.opacity = "1";
-			cursorVisible = true;
-		}
-	});
+	// ── Custom cursor (pointer devices only) ──────────────────────────
+	if (hasPointer) {
+		const circle = document.getElementById("cursor-circle")!;
+		let cx = 0, cy = 0, tx = 0, ty = 0;
+		let cursorVisible = false;
 
-	document.documentElement.addEventListener("mouseleave", () => {
-		circle.style.opacity = "0";
-		cursorVisible = false;
-	});
+		window.addEventListener("mousemove", (e) => {
+			tx = e.clientX;
+			ty = e.clientY;
+			if (!cursorVisible) {
+				circle.style.opacity = "1";
+				cursorVisible = true;
+			}
+		});
 
-	function moveCursor() {
-		cx += (tx - cx) * 0.5;
-		cy += (ty - cy) * 0.5;
-		circle.style.transform = `translate(${cx}px, ${cy}px)`;
-		requestAnimationFrame(moveCursor);
-	}
-	moveCursor();
-
-	// Hide circle over iframes but keep position synced
-	let overIframe = false;
-
-	document.querySelectorAll(".project-video").forEach((wrap) => {
-		wrap.addEventListener("mouseenter", () => {
-			overIframe = true;
+		document.documentElement.addEventListener("mouseleave", () => {
 			circle.style.opacity = "0";
+			cursorVisible = false;
 		});
-		wrap.addEventListener("mouseleave", (e) => {
-			overIframe = false;
-			cx = (e as MouseEvent).clientX;
-			cy = (e as MouseEvent).clientY;
-			tx = cx;
-			ty = cy;
-			circle.style.transform = `translate(${cx}px, ${cy}px)`;
-			circle.style.opacity = "1";
-		});
-	});
 
-	// Grow cursor on hoverable text
-	const hoverTargets = "a, button, .chip, .nav-link, .mobile-nav-link, h1, h2, p, span";
-	document.addEventListener("mouseover", (e) => {
-		if ((e.target as HTMLElement).closest(hoverTargets)) {
-			circle.classList.add("cursor-hover");
+		function moveCursor() {
+			cx += (tx - cx) * 0.5;
+			cy += (ty - cy) * 0.5;
+			circle.style.transform = `translate(${cx}px, ${cy}px)`;
+			requestAnimationFrame(moveCursor);
 		}
-	});
-	document.addEventListener("mouseout", (e) => {
-		if ((e.target as HTMLElement).closest(hoverTargets)) {
-			circle.classList.remove("cursor-hover");
-		}
-	});
+		moveCursor();
+
+		document.querySelectorAll(".project-video").forEach((wrap) => {
+			wrap.addEventListener("mouseenter", () => {
+				circle.style.opacity = "0";
+			});
+			wrap.addEventListener("mouseleave", (e) => {
+				cx = (e as MouseEvent).clientX;
+				cy = (e as MouseEvent).clientY;
+				tx = cx;
+				ty = cy;
+				circle.style.transform = `translate(${cx}px, ${cy}px)`;
+				circle.style.opacity = "1";
+			});
+		});
+
+		const hoverTargets = "a, button, .chip, .nav-link, .mobile-nav-link, h1, h2, p, span";
+		document.addEventListener("mouseover", (e) => {
+			if ((e.target as HTMLElement).closest(hoverTargets)) {
+				circle.classList.add("cursor-hover");
+			}
+		});
+		document.addEventListener("mouseout", (e) => {
+			if ((e.target as HTMLElement).closest(hoverTargets)) {
+				circle.classList.remove("cursor-hover");
+			}
+		});
+	}
 
 	const lenis = new Lenis({
 		duration: 1.2,
 		easing: (t: number) => 1 - Math.pow(1 - t, 4),
 		smoothWheel: true,
 		touchMultiplier: 1.5,
-		wheelMultiplier: 0.8,
+		wheelMultiplier: 1,
 	});
 
 	function raf(time: number) {
@@ -143,7 +146,7 @@ const { title, description = 'My portfolio site', lang = 'en' } = Astro.props as
 			const target = document.querySelector(id);
 			if (!target) return;
 			e.preventDefault();
-			const offset = id === "#about" ? window.innerHeight * 0.75 : 0;
+			const offset = 0;
 			lenis.scrollTo(target as HTMLElement, { offset, duration: 2 });
 		});
 	});

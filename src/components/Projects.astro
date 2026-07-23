@@ -1,6 +1,4 @@
 ---
-import translations from "../i18n/translations";
-
 const projects = [
   {
     id: "3oVf5oVtqTs?si=ORZ3huwbjTQu8j1u",
@@ -25,9 +23,6 @@ const projects = [
 ];
 ---
 
-<script is:inline define:vars={{ translations }}>
-  window.__projectsTranslations = translations;
-</script>
 
 <section id="projects" class="projects">
   <h2 class="projects-heading" data-proj-i18n="projects.heading">Projects</h2>
@@ -54,7 +49,7 @@ const projects = [
 </section>
 
 <script>
-  const projTr = (window as any).__projectsTranslations as Record<string, Record<string, string>>;
+  const projTr = (window as any).__translations as Record<string, Record<string, string>>;
 
   function applyProjectsLang() {
     const lang = document.documentElement.lang || "en";

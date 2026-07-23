@@ -1,10 +1,5 @@
 ---
-import translations from "../i18n/translations";
 ---
-
-<script is:inline define:vars={{ translations }}>
-  window.__aboutTranslations = translations;
-</script>
 
 <section id="about" class="about">
   <div class="about-sticky">
@@ -18,7 +13,7 @@ import translations from "../i18n/translations";
         </div>
         <div class="card-right">
           <div class="card-photo">
-            <img src="/me.png" alt="Sabri Akbas" />
+            <img src="/me.webp" alt="Sabri Akbas" loading="lazy" width="702" height="800" />
           </div>
         </div>
       </div>
@@ -30,7 +25,7 @@ import translations from "../i18n/translations";
         </div>
         <div class="card-right">
           <div class="card-photo card-video-wrap">
-            <video id="about-video" autoplay muted loop playsinline disablepictureinpicture>
+            <video id="about-video" autoplay muted loop playsinline disablepictureinpicture preload="metadata">
               <source src="/j4n.mp4" type="video/mp4" />
             </video>
             <button class="mute-btn" id="mute-btn" aria-label="Unmute video">
@@ -56,7 +51,7 @@ import translations from "../i18n/translations";
         </div>
         <div class="card-right">
           <div class="card-photo">
-            <img src="/desk.png" alt="Tools & craft" />
+            <img src="/desk.webp" alt="Tools & craft" loading="lazy" width="800" height="538" />
           </div>
         </div>
       </div>
@@ -68,7 +63,7 @@ import translations from "../i18n/translations";
         </div>
         <div class="card-right">
           <div class="card-photo">
-            <img src="/moto.jpg" alt="Philosophy" />
+            <img src="/moto.webp" alt="Philosophy" loading="lazy" width="1200" height="675" />
           </div>
         </div>
       </div>
@@ -78,7 +73,7 @@ import translations from "../i18n/translations";
 
 <script>
   // ── i18n ──────────────────────────────────────────────────────────
-  const aboutTr = (window as any).__aboutTranslations as Record<string, Record<string, string>>;
+  const aboutTr = (window as any).__translations as Record<string, Record<string, string>>;
 
   function applyAboutLang() {
     const lang = document.documentElement.lang || "en";
@@ -105,195 +100,231 @@ import translations from "../i18n/translations";
     muteBtn.setAttribute("aria-label", video.muted ? "Unmute video" : "Mute video");
   });
 
-  function checkVideoPlay(progress: number) {
-    const videoVisible = progress >= 1 && progress < 3;
-    if (videoVisible) {
+  // ── Card switching ──────────────────────────────────────────────
+  const section = document.querySelector(".about") as HTMLElement;
+  const cards = document.querySelectorAll<HTMLElement>(".about-card");
+  const totalCards = cards.length;
+  const lenis = (window as any).__lenis;
+  let activeCard = -1;
+
+  function showCard(index: number) {
+    if (index === activeCard) return;
+    activeCard = index;
+    cards.forEach((card, i) => card.classList.toggle("active", i === index));
+    if (index === 1) {
       if (video.paused) video.play().catch(() => {});
     } else {
       if (!video.paused) video.pause();
     }
   }
 
-  // ── Card scroll animation ────────────────────────────────────────
-  const section = document.querySelector(".about") as HTMLElement;
-  const cards = document.querySelectorAll<HTMLElement>(".about-card");
-  const totalCards = cards.length;
-
-  function onScroll() {
-    const rect = section.getBoundingClientRect();
-    const sectionH = section.offsetHeight;
-    const viewH = window.innerHeight;
-
-    const scrolled = -rect.top;
-    const scrollRange = sectionH - viewH;
-    const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
-
-    const cardProgress = progress * totalCards;
-
-    checkVideoPlay(cardProgress);
-
-    cards.forEach((card, i) => {
-      const p = Math.max(0, Math.min(1, cardProgress - i));
-
-      if (p <= 0) {
-        card.style.opacity = "0";
-        card.style.transform = "translateY(60px) scale(0.95)";
-        card.style.pointerEvents = "none";
-      } else if (p < 1) {
-        const ease = 1 - Math.pow(1 - p, 3);
-        card.style.opacity = String(ease);
-        card.style.transform = `translateY(${60 * (1 - ease)}px) scale(${0.95 + 0.05 * ease})`;
-        card.style.pointerEvents = "auto";
-      } else {
-        const exit = Math.max(0, Math.min(1, cardProgress - i - 1));
-        const exitEase = 1 - Math.pow(1 - exit, 2);
-
-        if (i < totalCards - 1) {
-          card.style.opacity = String(1 - exitEase * 0.6);
-          card.style.transform = `translateY(${-30 * exitEase}px) scale(${1 - 0.05 * exitEase})`;
-          card.style.pointerEvents = exitEase > 0.5 ? "none" : "auto";
-        } else {
-          card.style.opacity = "1";
-          card.style.transform = "translateY(0) scale(1)";
-          card.style.pointerEvents = "auto";
-        }
-      }
-    });
+  function getCardIndex() {
+    const sectionTop = section.offsetTop;
+    const scrollRange = section.offsetHeight - window.innerHeight;
+    const scrolled = window.scrollY - sectionTop;
+    return Math.max(0, Math.min(totalCards - 1, Math.floor((scrolled / scrollRange) * totalCards)));
   }
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-
-  // ── Particles ─────────────────────────────────────────────────────
-  const canvas = document.getElementById("about-particles") as HTMLCanvasElement;
-  const ctx = canvas.getContext("2d")!;
-  const sticky = canvas.parentElement!;
-
-  interface Particle {
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    r: number;
-    alpha: number;
+  function getSnapTarget(index: number) {
+    const sectionTop = section.offsetTop;
+    const scrollRange = section.offsetHeight - window.innerHeight;
+    return sectionTop + (index / totalCards) * scrollRange;
   }
 
-  const particles: Particle[] = [];
-  const COUNT = 60;
-  const mouse = { x: -1000, y: -1000 };
-  const mouseRadius = 150;
+  // Show first card when section becomes visible
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && activeCard === -1) showCard(0);
+  }, { threshold: 0.1 }).observe(section);
 
-  function resizeCanvas() {
+  // Update card on scroll
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    const sectionTop = section.offsetTop;
+    const scrollRange = section.offsetHeight - window.innerHeight;
+    if (y >= sectionTop && y <= sectionTop + scrollRange) {
+      showCard(getCardIndex());
+    }
+  }, { passive: true });
+
+  // Snap after scroll stops
+  let snapTimer: ReturnType<typeof setTimeout>;
+  let snapping = false;
+
+  window.addEventListener("scroll", () => {
+    if (snapping) return;
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => {
+      const y = window.scrollY;
+      const sectionTop = section.offsetTop;
+      const scrollRange = section.offsetHeight - window.innerHeight;
+      if (y < sectionTop || y > sectionTop + scrollRange) return;
+
+      const target = getSnapTarget(getCardIndex());
+      if (Math.abs(y - target) < 3) return;
+
+      snapping = true;
+      lenis.scrollTo(target, {
+        duration: 0.8,
+        easing: (t: number) => 1 - Math.pow(1 - t, 3),
+        onComplete: () => { snapping = false; },
+      });
+    }, 120);
+  }, { passive: true });
+
+  // ── Particles (desktop only) ───────────────────────────────────────
+  const isTouchDevice = !window.matchMedia("(hover: hover)").matches;
+
+  if (!isTouchDevice) {
+    const canvas = document.getElementById("about-particles") as HTMLCanvasElement;
+    const ctx = canvas.getContext("2d")!;
+    const sticky = canvas.parentElement!;
+
+    interface Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      alpha: number;
+    }
+
+    const particles: Particle[] = [];
+    const COUNT = 40;
+    const mouse = { x: -1000, y: -1000 };
+    const mouseRadius = 150;
+    let particleRafId = 0;
+
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    function resizeCanvas() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        canvas.width = sticky.clientWidth;
+        canvas.height = sticky.clientHeight;
+      }, 200);
+    }
+
     canvas.width = sticky.clientWidth;
     canvas.height = sticky.clientHeight;
-  }
+    window.addEventListener("resize", resizeCanvas);
 
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-
-  sticky.addEventListener("mousemove", (e) => {
-    const rect = sticky.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-  });
-
-  sticky.addEventListener("mouseleave", () => {
-    mouse.x = -1000;
-    mouse.y = -1000;
-  });
-
-  for (let i = 0; i < COUNT; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: 1 + Math.random() * 2,
-      alpha: 0.1 + Math.random() * 0.3,
+    sticky.addEventListener("mousemove", (e) => {
+      const rect = sticky.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
     });
-  }
 
-  function getColor() {
-    return document.documentElement.classList.contains("dark")
-      ? "255, 255, 255"
-      : "0, 0, 0";
-  }
+    sticky.addEventListener("mouseleave", () => {
+      mouse.x = -1000;
+      mouse.y = -1000;
+    });
 
-  function drawParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const color = getColor();
+    for (let i = 0; i < COUNT; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: 1 + Math.random() * 2,
+        alpha: 0.1 + Math.random() * 0.3,
+      });
+    }
+
+    function getColor() {
+      return document.documentElement.classList.contains("dark")
+        ? "255, 255, 255"
+        : "0, 0, 0";
+    }
+
     const maxDist = 120;
+    const maxDistSq = maxDist * maxDist;
+    const mouseRadiusSq = mouseRadius * mouseRadius;
 
-    for (const p of particles) {
-      const dx = p.x - mouse.x;
-      const dy = p.y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const color = getColor();
 
-      if (dist < mouseRadius && dist > 0) {
-        const force = (1 - dist / mouseRadius) * 0.8;
-        p.vx += (dx / dist) * force;
-        p.vy += (dy / dist) * force;
-      }
+      for (const p of particles) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const distSq = dx * dx + dy * dy;
 
-      p.vx *= 0.98;
-      p.vy *= 0.98;
-      p.x += p.vx;
-      p.y += p.vy;
+        if (distSq < mouseRadiusSq && distSq > 0) {
+          const dist = Math.sqrt(distSq);
+          const force = (1 - dist / mouseRadius) * 0.8;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+        }
 
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      if (p.y < 0) p.y = canvas.height;
-      if (p.y > canvas.height) p.y = 0;
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+        p.x += p.vx;
+        p.y += p.vy;
 
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${color}, ${p.alpha})`;
-      ctx.fill();
-    }
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
 
-    // Draw lines to cursor
-    for (const p of particles) {
-      const dx = p.x - mouse.x;
-      const dy = p.y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < mouseRadius) {
-        const lineAlpha = (1 - dist / mouseRadius) * 0.2;
         ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(mouse.x, mouse.y);
-        ctx.strokeStyle = `rgba(${color}, ${lineAlpha})`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${color}, ${p.alpha})`;
+        ctx.fill();
       }
-    }
 
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < maxDist) {
-          const lineAlpha = (1 - dist / maxDist) * 0.15;
+      for (const p of particles) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < mouseRadiusSq) {
+          const dist = Math.sqrt(distSq);
+          const lineAlpha = (1 - dist / mouseRadius) * 0.2;
           ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouse.x, mouse.y);
           ctx.strokeStyle = `rgba(${color}, ${lineAlpha})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         }
       }
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < maxDistSq) {
+            const lineAlpha = (1 - Math.sqrt(distSq) / maxDist) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(${color}, ${lineAlpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      particleRafId = requestAnimationFrame(drawParticles);
     }
 
-    requestAnimationFrame(drawParticles);
+    const particleObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          particleRafId = requestAnimationFrame(drawParticles);
+        } else {
+          cancelAnimationFrame(particleRafId);
+        }
+      },
+      { threshold: 0 }
+    );
+    particleObserver.observe(section);
   }
-
-  drawParticles();
 </script>
 
 <style>
   .about {
     position: relative;
-    height: 400vh;
+    height: 250vh;
   }
 
   .about-sticky {
@@ -339,17 +370,24 @@ import translations from "../i18n/translations";
     border: 1.5px solid rgba(0, 0, 0, 0.15);
     border-radius: 16px;
     background: var(--surface);
-    backdrop-filter: blur(12px);
     opacity: 0;
-    transform: translateY(60px) scale(0.95);
-    will-change: transform, opacity;
+    transform: translateY(40px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
     overflow: hidden;
     box-sizing: border-box;
+  }
+
+  .about-card.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
   }
 
   @media (min-width: 768px) {
     .about-card {
       padding: 2.5rem;
+      backdrop-filter: blur(12px);
     }
   }
 

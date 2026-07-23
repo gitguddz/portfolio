@@ -1,11 +1,6 @@
 ---
-import translations from "../i18n/translations";
 import { Icon } from "astro-icon/components";
 ---
-
-<script is:inline define:vars={{ translations }}>
-  window.__contactTranslations = translations;
-</script>
 
 <section id="contact" class="contact">
   <h2 class="contact-heading" data-contact-i18n="contact.heading">Get in touch</h2>
@@ -40,7 +35,7 @@ import { Icon } from "astro-icon/components";
 </section>
 
 <script>
-  const contactTr = (window as any).__contactTranslations as Record<string, Record<string, string>>;
+  const contactTr = (window as any).__translations as Record<string, Record<string, string>>;
 
   function applyContactLang() {
     const lang = document.documentElement.lang || "en";

@@ -1,10 +1,6 @@
 ---
-import translations, { type Lang } from "../i18n/translations";
+import { type Lang } from "../i18n/translations";
 ---
-
-<script is:inline define:vars={{ translations }}>
-  window.__heroTranslations = translations;
-</script>
 
 <section id="home" class="hero">
   <div class="hero-shapes" aria-hidden="true">
@@ -31,39 +27,43 @@ import translations, { type Lang } from "../i18n/translations";
 </section>
 
 <script>
-  const hero = document.querySelector(".hero") as HTMLElement;
-  const shapes = document.querySelectorAll<HTMLElement>(".shape");
+  const hasPointer = window.matchMedia("(hover: hover)").matches;
 
-  const strengths = [0.03, 0.05, 0.04, 0.025, 0.06];
-  const current = Array.from(shapes, () => ({ x: 0, y: 0 }));
-  const target = Array.from(shapes, () => ({ x: 0, y: 0 }));
+  if (hasPointer) {
+    const hero = document.querySelector(".hero") as HTMLElement;
+    const shapes = document.querySelectorAll<HTMLElement>(".shape");
 
-  hero.addEventListener("mousemove", (e) => {
-    const rect = hero.getBoundingClientRect();
-    const cx = e.clientX - rect.left - rect.width / 2;
-    const cy = e.clientY - rect.top - rect.height / 2;
+    const strengths = [0.03, 0.05, 0.04, 0.025, 0.06];
+    const current = Array.from(shapes, () => ({ x: 0, y: 0 }));
+    const target = Array.from(shapes, () => ({ x: 0, y: 0 }));
 
-    shapes.forEach((_, i) => {
-      target[i].x = cx * strengths[i];
-      target[i].y = cy * strengths[i];
+    hero.addEventListener("mousemove", (e) => {
+      const rect = hero.getBoundingClientRect();
+      const cx = e.clientX - rect.left - rect.width / 2;
+      const cy = e.clientY - rect.top - rect.height / 2;
+
+      shapes.forEach((_, i) => {
+        target[i].x = cx * strengths[i];
+        target[i].y = cy * strengths[i];
+      });
     });
-  });
 
-  hero.addEventListener("mouseleave", () => {
-    target.forEach((t) => { t.x = 0; t.y = 0; });
-  });
-
-  function tick() {
-    shapes.forEach((shape, i) => {
-      current[i].x += (target[i].x - current[i].x) * 0.08;
-      current[i].y += (target[i].y - current[i].y) * 0.08;
-      shape.style.setProperty("--mx", `${current[i].x}px`);
-      shape.style.setProperty("--my", `${current[i].y}px`);
+    hero.addEventListener("mouseleave", () => {
+      target.forEach((t) => { t.x = 0; t.y = 0; });
     });
-    requestAnimationFrame(tick);
+
+    function tick() {
+      shapes.forEach((shape, i) => {
+        current[i].x += (target[i].x - current[i].x) * 0.08;
+        current[i].y += (target[i].y - current[i].y) * 0.08;
+        shape.style.setProperty("--mx", `${current[i].x}px`);
+        shape.style.setProperty("--my", `${current[i].y}px`);
+      });
+      requestAnimationFrame(tick);
+    }
+
+    tick();
   }
-
-  tick();
 
   // ── Slide animation ────────────────────────────────────────────────
   const trackTop = document.getElementById("track-top")!;
@@ -73,7 +73,7 @@ import translations, { type Lang } from "../i18n/translations";
   const heroWhere = document.getElementById("hero-where")!;
   const heroFinds = document.getElementById("hero-finds")!;
 
-  const allTranslations = (window as any).__heroTranslations as Record<string, Record<string, string>>;
+  const allTranslations = (window as any).__translations as Record<string, Record<string, string>>;
 
   function getLang(): string {
     return document.documentElement.lang || "en";
@@ -183,7 +183,7 @@ import translations, { type Lang } from "../i18n/translations";
   .hero {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
     display: flex;
     align-items: flex-start;
     justify-content: center;

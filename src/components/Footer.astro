@@ -1,10 +1,5 @@
 ---
-import translations from "../i18n/translations";
 ---
-
-<script is:inline define:vars={{ translations }}>
-  window.__footerTranslations = translations;
-</script>
 
 <footer class="footer">
   <div class="footer-inner">
@@ -29,7 +24,7 @@ import translations from "../i18n/translations";
 </footer>
 
 <script>
-  const footerTr = (window as any).__footerTranslations as Record<string, Record<string, string>>;
+  const footerTr = (window as any).__translations as Record<string, Record<string, string>>;
 
   function applyFooterLang() {
     const lang = document.documentElement.lang || "en";
