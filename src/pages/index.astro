@@ -4,14 +4,14 @@ import About from '../components/About.astro';
 import Projects from '../components/Projects.astro';
 import Contact from '../components/Contact.astro';
 import Layout from '../layouts/Layout.astro';
-import { getLangFromUrl, t } from '../i18n/utils';
 ---
 
-<Layout title={t(getLangFromUrl(Astro.url), "site.title")} description="Welcome to my portfolio site! Here you'll find my projects, skills, and contact information." lang={getLangFromUrl(Astro.url)}>
+<Layout
+  title="Sabri Akbas — Developer & Filmmaker"
+  description="Portfolio of Sabri Akbas: web development and cinematic content based in Lugano."
+>
   <Hero />
   <About />
   <Projects />
   <Contact />
 </Layout>
-
-

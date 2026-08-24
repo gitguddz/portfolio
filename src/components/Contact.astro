@@ -1,130 +1,35 @@
 ---
-import { Icon } from "astro-icon/components";
+const links = [
+  { label: "Email", value: "sabriak60@gmail.com", href: "mailto:sabriak60@gmail.com" },
+  { label: "Instagram", value: "@sabrii.akbas", href: "https://www.instagram.com/sabrii.akbas" },
+  { label: "Instagram (film)", value: "@eeth5r", href: "https://www.instagram.com/eeth5r" },
+  { label: "YouTube", value: "@eeth5r", href: "https://youtube.com/@eeth5r?si=RnjTgt1068Ssp-ru" },
+  { label: "LinkedIn", value: "Sabri Akbas", href: "https://www.linkedin.com/in/sabri-akbas-4b887630a" },
+  { label: "GitHub", value: "gitguddz", href: "https://github.com/gitguddz" },
+];
 ---
 
-<section id="contact" class="contact">
-  <h2 class="contact-heading" data-contact-i18n="contact.heading">Get in touch</h2>
-  <p class="contact-sub" data-contact-i18n="contact.sub">Have a project in mind? Let's talk.</p>
+<section id="contact" class="border-t border-foreground px-6 py-20 md:px-10 md:py-32">
+  <p class="display text-4xl leading-[0.9] md:text-6xl">
+    LET'S
+    <br />
+    TALK
+  </p>
+  <p class="mt-6 max-w-sm font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+    Have a project in mind? Reach out through any of the channels below.
+  </p>
 
-  <div class="contact-grid">
-    <a href="mailto:sabriak60@gmail.com" class="contact-card">
-      <Icon name="lucide:mail" size={22} />
-      <span>sabriak60@gmail.com</span>
-    </a>
-    <a href="https://www.instagram.com/sabrii.akbas" target="_blank" rel="noopener" class="contact-card">
-      <Icon name="lucide:instagram" size={22} />
-      <span>@sabrii.akbas</span>
-    </a>
-     <a href="https://www.instagram.com/eeth5r" target="_blank" rel="noopener" class="contact-card">
-      <Icon name="lucide:instagram" size={22} />
-      <span>@eeth5r</span>
-    </a>
-    <a href="https://youtube.com/@eeth5r?si=RnjTgt1068Ssp-ru" target="_blank" rel="noopener" class="contact-card">
-      <Icon name="lucide:youtube" size={22} />
-      <span>@eeth5r</span>
-    </a>
-    <a href="https://www.linkedin.com/in/sabri-akbas-4b887630a" target="_blank" rel="noopener" class="contact-card">
-      <Icon name="lucide:linkedin" size={22} />
-      <span>Sabri Akbas</span>
-    </a>
-    <a href="https://github.com/gitguddz" target="_blank" rel="noopener" class="contact-card">
-      <Icon name="lucide:github" size={22} />
-      <span>gitguddz</span>
-    </a>
+  <div class="mt-12 grid grid-cols-1 font-mono text-[11px] uppercase tracking-[0.14em] md:grid-cols-2 md:text-xs">
+    {links.map((link, i) => (
+      <a
+        href={link.href}
+        target={link.href.startsWith("http") ? "_blank" : undefined}
+        rel={link.href.startsWith("http") ? "noopener" : undefined}
+        class={`flex items-baseline justify-between gap-4 border-t border-foreground py-4 hover:opacity-50 ${i % 2 === 0 ? "md:pr-8" : "md:pl-8"}`}
+      >
+        <span>{link.label}</span>
+        <span class="text-muted-foreground">{link.value}</span>
+      </a>
+    ))}
   </div>
 </section>
-
-<script>
-  const contactTr = (window as any).__translations as Record<string, Record<string, string>>;
-
-  function applyContactLang() {
-    const lang = document.documentElement.lang || "en";
-    document.querySelectorAll<HTMLElement>("[data-contact-i18n]").forEach((el) => {
-      const key = el.dataset.contactI18n!;
-      el.textContent = contactTr[lang]?.[key] ?? contactTr["en"][key] ?? key;
-    });
-  }
-
-  applyContactLang();
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
-
-  document.querySelectorAll(".contact-card").forEach((card) => {
-    observer.observe(card);
-  });
-</script>
-
-<style>
-  .contact {
-    padding: 6rem 1.5rem;
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-  }
-
-  .contact-heading {
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
-    font-weight: 100;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--fg);
-    margin: 0 0 1rem;
-  }
-
-  .contact-sub {
-    font-size: clamp(0.9rem, 2vw, 1.05rem);
-    color: var(--muted);
-    margin: 0 0 3rem;
-  }
-
-  .contact-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .contact-card {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.8rem 1.4rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
-    transition:
-      color 0.2s,
-      border-color 0.2s,
-      transform 0.3s ease;
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  .contact-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .contact-card:nth-child(1) { transition-delay: 0s; }
-  .contact-card:nth-child(2) { transition-delay: 0.06s; }
-  .contact-card:nth-child(3) { transition-delay: 0.12s; }
-  .contact-card:nth-child(4) { transition-delay: 0.18s; }
-  .contact-card:nth-child(5) { transition-delay: 0.24s; }
-
-  .contact-card:hover {
-    color: var(--fg);
-    border-color: var(--fg);
-  }
-</style>

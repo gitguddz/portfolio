@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
-import icon from "astro-icon";
 import cloudflare from "@astrojs/cloudflare";
 
 
@@ -11,14 +10,5 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  integrations: [icon()],
   adapter: process.argv.includes("dev") ? undefined : cloudflare(),
-
-  i18n: {
-    defaultLocale: "en",
-    locales: ["en", "it"],
-    routing: {
-      prefixDefaultLocale: false,
-    },
-  },
 });
