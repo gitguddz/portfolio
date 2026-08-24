@@ -49,3 +49,32 @@ body {
   text-transform: uppercase;
   font-stretch: 100%;
 }
+
+/* ── Page-load intro ── */
+.intro-title,
+.intro-text,
+.intro-image {
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.intro .intro-title,
+html.intro .intro-text,
+html.intro .intro-image {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+html.intro-title-in .intro-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html.intro-text-in .intro-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html.intro-image-in .intro-image {
+  opacity: 1;
+  transform: translateY(0);
+}
